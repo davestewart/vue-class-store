@@ -21,15 +21,23 @@ export function makeOptions(model: Instance): ComponentOptions<any> {
   const descriptors = Object.getOwnPropertyDescriptors(prototype)
 
   // core options
+  const data = {}
   const computed = {}
   const methods = {}
   const watch = {}
-  const data = Object.keys(model).reduce((output, key) => {
-    output[key] = model[key]
-    return output
-  }, {})
 
-  // add methods
+  // properties
+  Object.keys(model).forEach(key => {
+    const value = model[key]
+    if (key.startsWith('on:')) {
+      watch[key.substring(3)] = value
+    }
+    else {
+      data[key] = value
+    }
+  })
+
+  // descriptors
   Object.keys(descriptors).forEach(key => {
     if (key !== 'constructor') {
       const { value, get, set } = descriptors[key]

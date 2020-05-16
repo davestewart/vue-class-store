@@ -20,18 +20,24 @@ export function makeVueModel<T extends Instance> (model: T): T {
 export function makeOptions(model: Instance): ComponentOptions<any> {
   // prototype
   const prototype = Object.getPrototypeOf(model)
-  if (!(prototype && prototype !== Object.prototype)) {
+  if (!prototype || prototype === Object.prototype) {
     return {}
   }
 
-  // objects
+  // parent options
+  const extendsOptions = makeOptions(prototype)
+
+  // descriptors
   const descriptors = Object.getOwnPropertyDescriptors(prototype)
+
+  // options
+  const name = prototype.constructor.name
   const data = {}
   const computed = {}
   const methods = {}
   const watch = {}
 
-  // properties
+  // data, string watches
   Object.keys(model).forEach(key => {
     const value = model[key]
     if (key.startsWith('on:')) {
@@ -42,7 +48,7 @@ export function makeOptions(model: Instance): ComponentOptions<any> {
     }
   })
 
-  // descriptors
+  // function watches, methods, computed
   Object.keys(descriptors).forEach(key => {
     if (key !== 'constructor') {
       const { value, get, set } = descriptors[key]
@@ -63,8 +69,8 @@ export function makeOptions(model: Instance): ComponentOptions<any> {
 
   // return
   return {
-    name: prototype.constructor.name,
-    extends: makeOptions(prototype),
+    name,
+    extends: extendsOptions,
     computed,
     methods,
     watch,

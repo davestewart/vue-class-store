@@ -1,7 +1,6 @@
 import VueStore from '../../../lib'
 
-@VueStore
-export default class Rectangle {
+export class Rectangle {
   public width: number
 
   public height: number
@@ -31,3 +30,6 @@ export default class Rectangle {
     this.logs.push(`${new Date().toISOString().match(/\d{2}:\d{2}:\d{2}/)}: ${message}`)
   }
 }
+
+@VueStore
+export class RectangleStore extends Rectangle {}

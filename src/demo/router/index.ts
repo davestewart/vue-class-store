@@ -30,6 +30,7 @@ const routes= [
 
 const router = new VueRouter({
   mode: 'history',
+  // @ts-ignore
   base: process.env.BASE_URL,
   routes
 })

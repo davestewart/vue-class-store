@@ -1,5 +1,6 @@
 <template>
   <RectangleView
+    name="Square"
     :width.sync="model.width"
     :height.sync="model.height"
     :area="model.area"
@@ -9,14 +10,14 @@
 </template>
 
 <script>
-import { RectangleStore } from './Rectangle'
+import { SquareStore } from './Square'
 
 export default {
-  name: 'ClassStoreExample',
+  name: 'ClassStoreInheritanceExample',
 
   computed: {
     model () {
-      return new RectangleStore(20, 10)
+      return new SquareStore(20, 10)
     }
   },
 }

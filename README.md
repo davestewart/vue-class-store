@@ -26,9 +26,17 @@ Additionally, once your data is in your chosen format:
 
 Vue Class Store is a one-liner TypeScript decorator or single ES6 helper function that makes any class fully reactive, with computed properties, watched properties and methods.
 
+![devtools](./docs/devtools.png)
+
 Converted classes can be used locally or globally, outside or inside components, or even nested in other stores and are fully compatible with the Vue ecosystem because they are converted into `Vue` instances.
 
-However, the best bit is because of the typing flow of the decorator, your still IDE thinks they're vanilla classes, so you get full auto-complete and code intelligence on all the original members! Debugging and breakpoints also work perfectly, and `this` refers to the class instance itself.
+Debugging and breakpoints also work perfectly, and `this` refers to the class instance itself:
+
+![devtools](./docs/breakpoints.png)
+
+Even your IDE sees the models as classes, so you get full auto-complete on all the original members:
+
+![devtools](./docs/ide.png)
 
 ## Overview
 

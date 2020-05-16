@@ -28,6 +28,9 @@
     "vuex": "^3.4.0",
     "webpack": "^4.43.0"
   },
+  "files": [
+    "src/lib/*.*"
+  ],
   "directories": {
     "test": "test"
   },

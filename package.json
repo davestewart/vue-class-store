@@ -1,7 +1,7 @@
 {
   "name": "vue-class-store",
   "description": "Zero-boilerplate class-based stores for Vue",
-  "version": "1.0.0",
+  "version": "1.0.0-beta-1",
   "author": "Dave Stewart",
   "license": "ISC",
   "main": "src/lib/index.js",

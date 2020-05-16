@@ -81,15 +81,15 @@ Within another component:
 
 ```javascript
 export default {
-	props: {
-		value: Number
-	},
-	
-	computed: {
-		model () {
-			return new Store(this.value)
-		}
-	}
+  props: {
+    value: Number
+  },
+  
+  computed: {
+    model () {
+      return new Store(this.value)
+    }
+  }
 }
 ```
 
@@ -97,32 +97,31 @@ Or you could inject it into a component tree, simulating global state:
 
 ```javascript
 export default {
-  name:
-	provide () {
-		return {
-  		$store: new Store(10)
-		}
-	},
+  provide () {
+    return {
+      $store: new Store(10)
+    }
+  },
 }
 ```
 
 ```javascript
 export default {
-	inject: [
-		'$store'
-	],
-	
-	computed: {
-		value () {
-			return this.$store.value
-		}
-	}
+  inject: [
+    '$store'
+  ],
+  
+  computed: {
+    value () {
+      return this.$store.value
+    }
+  }
 }
 ```
 
 ## Examples
 
-There is a demo folder to compare code; look in  `src/demo/examples/*` to see:
+There is a demo folder to compare code; look in `src/demo/examples/*` to see:
 
 - Class Store
 - Vue Component

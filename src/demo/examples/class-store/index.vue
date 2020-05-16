@@ -1,11 +1,15 @@
 <template>
-  <RectangleView
-    :width.sync="model.width"
-    :height.sync="model.height"
-    :area="model.area"
-    :logs="model.logs"
-    @randomize="model.randomize"
-  />
+  <div>
+    <p>Simple and intuitive reactive, computed, and watched properties, all within a single model.</p>
+    <hr>
+    <RectangleView
+      :width.sync="model.width"
+      :height.sync="model.height"
+      :area="model.area"
+      :logs="model.logs"
+      @randomize="model.randomize"
+    />
+  </div>
 </template>
 
 <script>

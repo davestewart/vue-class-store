@@ -1,11 +1,15 @@
 <template>
-  <RectangleView
-    :width.sync="model.width"
-    :height.sync="model.height"
-    :area="model.area"
-    :logs="model.logs"
-    @randomize="model.randomize"
-  />
+  <div>
+    <p>Logic and data moved into a factory, but that logic still requires a non standard format</p>
+    <hr>
+    <RectangleView
+      :width.sync="model.width"
+      :height.sync="model.height"
+      :area="model.area"
+      :logs="model.logs"
+      @randomize="model.randomize"
+    />
+  </div>
 </template>
 
 <script>

@@ -1,13 +1,17 @@
 <template>
-  <RectangleView
-    :width="width"
-    :height="height"
-    :area="area"
-    :logs="logs"
-    @update:width="onWidth"
-    @update:height="onHeight"
-    @randomize="randomize"
-  />
+  <div>
+    <p>Completely verbose, proprietary model and accessor formats required to do even simple updates</p>
+    <hr>
+    <RectangleView
+      :width="width"
+      :height="height"
+      :area="area"
+      :logs="logs"
+      @update:width="onWidth"
+      @update:height="onHeight"
+      @randomize="randomize"
+    />
+  </div>
 </template>
 
 <script>

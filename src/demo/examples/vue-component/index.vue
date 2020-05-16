@@ -1,11 +1,15 @@
 <template>
-  <RectangleView
-    :width.sync="width"
-    :height.sync="height"
-    :area="area"
-    :logs="logs"
-    @randomize="randomize"
-  />
+  <div>
+    <p>All logic and data needs to be baked into the visual component itself</p>
+    <hr>
+    <RectangleView
+      :width.sync="width"
+      :height.sync="height"
+      :area="area"
+      :logs="logs"
+      @randomize="randomize"
+    />
+  </div>
 </template>
 
 <script>

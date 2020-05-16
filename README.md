@@ -4,7 +4,7 @@
 
 ## Abstract
 
-#### Problem
+### Problem
 
 Vue's system of reactive data, computed properties and watchers makes it very easy to write expressive code.
 
@@ -12,7 +12,7 @@ Unfortunately, to take advantage, you need to structure your data in a non-stand
 
 This makes it very difficult to manage, rewrite, extend or refactor your logic and data once in, and introduces a lot of boilerplate, new concepts and so-called best practices. 
 
-#### Solution
+### Solution
 
 Vue Class Store is a one-liner TypeScript decorator or single ES6 helper function that makes any class fully reactive, with computed properties, watched properties and methods.
 
@@ -22,7 +22,7 @@ Working with class stores is easy as they are *just* classes, which means you ca
 
 ![devtools](https://raw.githubusercontent.com/davestewart/vue-class-store/master/docs/breakpoints.png)
 
-#### Features
+### Features
 
 - Zero boilerplate
 - Class-based syntax
@@ -33,7 +33,7 @@ Working with class stores is easy as they are *just* classes, which means you ca
 
 ## Installation
 
-#### Setup
+### Setup
 
 Install from NPM:
 
@@ -47,7 +47,7 @@ yarn add vue-class-store
 
 ## Usage
 
-#### Declaration
+### Declaration
 
 Write classes as normal, and add the decorator `@VueStore` to those you want to become reactive.
 
@@ -87,7 +87,7 @@ export class Store {
 
 Behind the scenes, the decorator will convert the class to a new Vue instance and return it.
 
-#### Instantiation
+### Instantiation
 
 To use a store, simply instantiate the class.
 
@@ -115,7 +115,7 @@ export default {
 
 Wherever you do it, the decorator will return a new `Vue` instance, but your IDE will think it's an instance of the original class, and it will have *exactly* the same properties.
 
-#### Inheritance
+### Inheritance
 
 The decorator supports class inheritance, by chaining the prototypes as Vue `extends` options, meaning you can do things like this:
 
@@ -165,7 +165,7 @@ class Square extends Rectangle { }
 class SquareStore extends Square { } 
 ```
 
-#### Global / shared state
+### Global / shared state
 
 Because the class itself is reactive, you could inject it into a component tree, simulating global state:
 

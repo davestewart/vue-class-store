@@ -75,8 +75,8 @@ export class Store {
     console.log('value changed to:', this.value)
   }
 
-	// you can even drill into sub properties!
-	'on:some.other.value' = 'log'
+  // you can even drill into sub properties!
+  'on:some.other.value' = 'log'
 
   // class methods are added as methods
   log () {

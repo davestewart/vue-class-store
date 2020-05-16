@@ -10,7 +10,7 @@ export class Rectangle {
   constructor(width = 2, height = 2)  {
     this.width = width
     this.height = height
-    this.log(`Class Store created!`)
+    this.log(`Rectangle constructor called!`)
   }
 
   get area () {
@@ -32,4 +32,10 @@ export class Rectangle {
 }
 
 @VueStore
-export class RectangleStore extends Rectangle {}
+export class RectangleStore extends Rectangle {
+  // there's no need to provide a constructor here, this is just to log some output
+  constructor (width, height) {
+    super(width, height);
+    this.log(`RectangleStore constructor called!`)
+  }
+}

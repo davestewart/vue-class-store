@@ -14,22 +14,21 @@ This makes it very difficult to manage, rewrite, extend or refactor your logic a
 
 ### Solution
 
-Vue Class Store is a one-liner TypeScript decorator or single ES6 helper function that makes any class fully reactive, with computed properties, watched properties and methods.
+Vue Class Store is a one-liner TypeScript decorator or single ES6 helper function that makes any class fully reactive, with computed properties, watches and methods.
 
 Converted classes can be used locally or globally, outside or inside components, or even nested in other stores and are fully compatible with the Vue ecosystem because they are converted into `Vue` instances.
 
 Working with class stores is easy as they are *just* classes, which means you can even inherit from superclasses, and debugging and breakpoints work like you expect!
 
-![devtools](https://raw.githubusercontent.com/davestewart/vue-class-store/master/docs/breakpoints.png)
+![devtools](https://raw.githubusercontent.com/davestewart/vue-class-store/master/src/demo/images/devtools.png)
 
 ### Features
 
 - Zero boilerplate
+- Reactive data, computed properties and watches
 - Class-based syntax
-- Reactive data, real computed properties and watches
-- IDE, source panel / debugger and devtools friendly
-- Inherit from multiple classes
-- Pass parameters in constructors
+- Proper inheritance
+- IDE / DevTools friendly
 
 ## Installation
 
@@ -143,23 +142,25 @@ class Square extends Rectangle {
 }
 ```
 
-Make sure you don't inherit from another decorated class, because when created, it will no longer be a class instance, but a Vue instance, with all its properties already created:
+Make sure you **don't inherit from another decorated class** because the original link to the prototype chain will have been broken by the substituted object returned by the previous decorator:
 
 ```typescript
 // don't do this!
 
 @VueStore
-class Rectangle { }
+class Rectangle { ... }
 
 @VueStore
-class Square extends Rectangle { }
+class Square extends Rectangle { ... }
 ```
 
-If you need to keep the original Rectangle and Square classes as vanilla classes, create a final store class that leaves the original classes untouched:
+If you need to keep the original Rectangle and Square intact, decorate a final empty class that leaves the original classes untouched:
 
 ```typescript
-class Rectangle { }
-class Square extends Rectangle { }
+// do this instead...
+
+class Rectangle { ... }
+class Square extends Rectangle { ... }
 
 @VueStore
 class SquareStore extends Square { } 
@@ -199,7 +200,7 @@ export default {
 
 ## Demo
 
-There is a demo folder to compare code; look in `src/demo/examples/*` to compare the code for Vue Class Store compared to other state management approaches:
+The demo folder compares various state management approaches; check `src/demo/examples/*` :
 
 - [Basic Class Store](./src/demo/examples/class-store)
 - [Class Store with Inheritance](./src/demo/examples/class-store-inheritance)
@@ -208,7 +209,7 @@ There is a demo folder to compare code; look in `src/demo/examples/*` to compare
 - [Vue Model](./src/demo/examples/vue-model)
 - [Vuex](./src/demo/examples/vuex)
 
-To run the demo, clone the repo and run `npm run demo`:
+To run the demo, clone the repo and run the `demo` script:
 
 ```
 git clone https://github.com/davestewart/vue-class-store.git

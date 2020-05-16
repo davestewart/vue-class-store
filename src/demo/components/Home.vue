@@ -8,7 +8,7 @@
     </ul>
 
     <h4>Intro</h4>
-    <p>This demo shows 4 examples of modeling and presenting data in Vue.</p>
+    <p>This demo compares various state management approaches.</p>
     <p>Each example uses a single methodology to model a rectangle with the following common functionality:</p>
     <ul>
       <li><strong>Width</strong> and <strong>height</strong> props / parameters</li>

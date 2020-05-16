@@ -1,12 +1,12 @@
 import VueStore from '../../../lib'
 import { Rectangle } from '../class-store/Rectangle'
 
-export default class Square extends Rectangle {
+export class Square extends Rectangle {
 
   constructor (size) {
     super(size)
     this.update(size)
-    this.log(`Class Store (Square) created!`)
+    this.log(`Square constructor called!`)
   }
 
   'on:width' = 'update'
@@ -25,4 +25,9 @@ export default class Square extends Rectangle {
 
 @VueStore
 export class SquareStore extends Square {
+  // there's no need to provide a constructor here, this is just to log some output
+  constructor (size) {
+    super(size);
+    this.log(`SquareStore constructor called!`)
+  }
 }

@@ -201,8 +201,9 @@ export default {
 
 There is a demo folder to compare code; look in `src/demo/examples/*` to compare the code for Vue Class Store compared to other state management approaches:
 
-- [Class Store](./src/demo/examples/class-store)
-- [Class Store Inheritance](./src/demo/examples/class-store-inheritance)
+- [Basic Class Store](./src/demo/examples/class-store)
+- [Class Store with Inheritance](./src/demo/examples/class-store-inheritance)
+- [Global Class Store](./src/demo/examples/class-store-global)
 - [Vue Component](./src/demo/examples/vue-component)
 - [Vue Model](./src/demo/examples/vue-model)
 - [Vuex](./src/demo/examples/vuex)

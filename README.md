@@ -123,10 +123,10 @@ export default {
 
 There is a demo folder to compare code; look in `src/demo/examples/*` to see:
 
-- Class Store
-- Vue Component
-- Vue Model
-- Vuex
+- [Class Store](./src/demo/examples/class-store)
+- [Vue Component](./src/demo/examples/vue-component)
+- [Vue Model](./src/demo/examples/vue-model)
+- [Vuex](./src/demo/examples/vuex)
 
 Run the demo with:
 

@@ -208,9 +208,11 @@ There is a demo folder to compare code; look in `src/demo/examples/*` to compare
 - [Vue Model](./src/demo/examples/vue-model)
 - [Vuex](./src/demo/examples/vuex)
 
-Run the demo with:
+To run the demo, clone the repo and run `npm run demo`:
 
 ```
+git clone https://github.com/davestewart/vue-class-store.git
+cd vue-class-store
+npm install
 npm run demo
 ```
-

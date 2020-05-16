@@ -13,14 +13,19 @@ export default function VueStore<T extends Created> (constructor: T): T {
 }
 
 export function makeVueModel<T extends Instance> (model: T): T {
-  return (new Vue(makeOptions(model)) as unknown) as T
+  const options = makeOptions(model)
+  return (new Vue(options) as unknown) as T
 }
 
 export function makeOptions(model: Instance): ComponentOptions<any> {
+  // prototype
   const prototype = Object.getPrototypeOf(model)
-  const descriptors = Object.getOwnPropertyDescriptors(prototype)
+  if (!(prototype && prototype !== Object.prototype)) {
+    return {}
+  }
 
-  // core options
+  // objects
+  const descriptors = Object.getOwnPropertyDescriptors(prototype)
   const data = {}
   const computed = {}
   const methods = {}
@@ -59,6 +64,7 @@ export function makeOptions(model: Instance): ComponentOptions<any> {
   // return
   return {
     name: prototype.constructor.name,
+    extends: makeOptions(prototype),
     computed,
     methods,
     watch,

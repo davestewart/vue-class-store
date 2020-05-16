@@ -1,28 +1,51 @@
 <template>
   <RectangleView
-    :width.sync="model.model.width"
-    :height.sync="model.model.height"
-    :area="model.area"
-    :logs="model.logs"
-    @randomize="model.randomize"
+    :width.sync="width"
+    :height.sync="height"
+    :area="area"
+    :logs="logs"
+    @randomize="randomize"
   />
 </template>
 
 <script>
-import Rectangle from './Rectangle'
 
 export default {
   name: 'VueComponentExample',
 
-  computed: {
-    model () {
-      return new Rectangle({
-        propsData: {
-          width: 20,
-          height: 10,
-        }
-      })
+  data () {
+    return {
+      width: 20,
+      height: 20,
+      logs: []
     }
   },
+
+  computed: {
+    area () {
+      return this.width * this.height
+    }
+  },
+
+  watch: {
+    area (value) {
+      this.log(`Area is ${value}`)
+    }
+  },
+
+  created () {
+    this.log(`Vue Component created!`)
+  },
+
+  methods: {
+    randomize () {
+      this.width = Math.random() * 20
+      this.height = Math.random() * 10
+    },
+
+    log (message) {
+      this.logs.push(`${new Date().toISOString().match(/\d{2}:\d{2}:\d{2}/)}: ${message}`)
+    }
+  }
 }
 </script>

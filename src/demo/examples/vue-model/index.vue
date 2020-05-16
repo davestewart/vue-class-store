@@ -9,17 +9,14 @@
 </template>
 
 <script>
-import Rectangle from './Rectangle'
+import { makeRectangle } from './Rectangle'
 
 export default {
   name: 'VueModelExample',
 
   computed: {
     model () {
-      return new Rectangle({propsData: {
-        width: 20,
-        height: 10,
-      }})
+      return makeRectangle(20, 10)
     }
   },
 }

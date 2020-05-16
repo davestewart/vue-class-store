@@ -4,30 +4,20 @@
   "version": "1.0.0-beta-2",
   "author": "Dave Stewart",
   "license": "ISC",
-  "main": "src/lib/index.js",
-  "module": "src/lib/index.js",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
   "scripts": {
-    "demo": "npx poi src/demo/index.ts --serve --open",
+    "stats": "node dev/stats.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "peerDependencies": {
     "vue": "^2.6.11"
   },
   "devDependencies": {
-    "@babel/core": "^7.9.6",
-    "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@babel/plugin-proposal-decorators": "^7.8.3",
-    "@babel/preset-env": "^7.9.6",
-    "@poi/plugin-typescript": "^12.3.1",
-    "babel-loader": "^8.1.0",
-    "babel-preset-env": "^1.7.0",
+    "sloc": "^0.2.1",
     "tslib": "^2.0.0",
-    "typescript": "^3.9.2",
-    "vue-router": "^3.1.6",
-    "vue-template-compiler": "^2.6.11",
-    "vue": "^2.6.11",
-    "vuex": "^3.4.0",
-    "webpack": "^4.43.0"
+    "typescript": "^3.9.2"
   },
   "files": [
     "src/lib/*.*"

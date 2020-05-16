@@ -20,7 +20,7 @@ Converted classes can be used locally or globally, outside or inside components,
 
 Working with class stores is easy as they are *just* classes, which means you can even inherit from superclasses, and debugging and breakpoints work like you expect!
 
-![devtools](https://raw.githubusercontent.com/davestewart/vue-class-store/master/src/demo/images/devtools.png)
+![devtools](https://raw.githubusercontent.com/davestewart/vue-class-store/master/dev/devtools.png)
 
 ### Features
 
@@ -200,7 +200,7 @@ export default {
 
 ## Demo
 
-The demo folder compares various state management approaches; check `src/demo/examples/*` :
+The demo folder compares various state management approaches; check `demo/src/examples/*` :
 
 - [Basic Class Store](./src/demo/examples/class-store)
 - [Class Store with Inheritance](./src/demo/examples/class-store-inheritance)
@@ -213,7 +213,7 @@ To run the demo, clone the repo and run the `demo` script:
 
 ```
 git clone https://github.com/davestewart/vue-class-store.git
-cd vue-class-store
+cd vue-class-store/demo
 npm install
 npm run demo
 ```

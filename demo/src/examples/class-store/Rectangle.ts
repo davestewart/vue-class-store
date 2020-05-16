@@ -1,4 +1,4 @@
-import VueStore from '../../../lib'
+import VueStore from 'vue-class-store'
 
 export class Rectangle {
   public width: number

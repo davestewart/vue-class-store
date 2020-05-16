@@ -1,4 +1,4 @@
-import VueStore from '../../../lib'
+import VueStore from 'vue-class-store'
 import { Rectangle } from '../class-store/Rectangle'
 
 export class Square extends Rectangle {

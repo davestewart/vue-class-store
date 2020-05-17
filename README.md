@@ -6,9 +6,9 @@
 
 Vue Class Store is a one-liner upgrade that adds reactivity, computed properties, caching and watches to regular TS/ES6 classes.
 
-It allows you to leverage the advanced reactivity features of Vue whilst retaining the familiar classical syntax, structure and functionality such as simple instantiation, parametized constructors and inheritance – with zero, setup or bloat.
+It allows you to leverage the advanced reactivity features of Vue whilst retaining familiar classical syntax, structure and functionality, such as simple instantiation, parametized constructors and inheritance – with zero setup or bloat.
 
-With Vue Class Store, there's no more refactoring data into components or abstracting into modules, mutations and getters, you simply write and instantiate classes, then work with them directly.
+With Vue Class Store there's no refactoring data into components or abstracting into modules, writing mutations or mapping getters; you simply write and instantiate classes then work with them directly.
 
 Stores can be used locally or globally, outside or inside components, or even nested in other stores and are fully compatible with the Vue ecosystem – because they are transparently converted into `Vue` instances.
 

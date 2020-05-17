@@ -1,7 +1,7 @@
 const { exec } = require('child_process')
 const fs = require('fs')
 
-const path = 'src/demo/examples'
+const path = 'demo/src/examples'
 const folders = fs.readdirSync(path)
 
 folders.forEach(folder => {

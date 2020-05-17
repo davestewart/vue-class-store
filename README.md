@@ -34,7 +34,7 @@ Working with class stores is easy as they are *just* classes, which means you ca
 
 ### Setup
 
-Install from NPM:
+Install the package from NPM:
 
 ```bash
 npm i vue-class-store
@@ -42,6 +42,15 @@ npm i vue-class-store
 
 ```bash
 yarn add vue-class-store
+```
+
+In your main project file, install the extension: 
+
+```javascript
+import Vue from 'vue'
+import VueStore from 'vue-class-store'
+
+Vue.use(VueStore.install)
 ```
 
 ## Usage
@@ -110,6 +119,15 @@ export default {
     }
   }
 }
+```
+
+Alternatively, you can convert any non-decorated class using the static `.create()` method:
+
+```javascript
+import VueStore from 'vue-class-store'
+import Model from './Model'
+
+const store = VueStore.create(new Model(1, 2, 3))
 ```
 
 Wherever you do it, the decorator will return a new `Vue` instance, but your IDE will think it's an instance of the original class, and it will have *exactly* the same properties.

@@ -5,7 +5,7 @@
   },
   "dependencies": {
     "vue": "^2.6.11",
-    "vue-class-store": "^1.0.0-beta-3",
+    "vue-class-store": "^1.0.0-beta-4",
     "vue-router": "^3.1.6",
     "vuex": "^3.4.0"
   },

@@ -1,2 +1,5 @@
 /node_modules
 /demo/node_modules
+/build/node_modules
+/build/.rpt2_cache
+/dist

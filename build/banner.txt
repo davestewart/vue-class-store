@@ -1,0 +1,12 @@
+Bundle of: <%= pkg.name %>
+Generated: <%= moment().format('YYYY-MM-DD') %>
+Version: <%= pkg.version %>
+
+
+import path from 'path'
+import license from 'rollup-plugin-license'
+import commonjs from 'rollup-plugin-commonjs'
+import uglify from 'rollup-plugin-uglify'
+import buble from 'rollup-plugin-buble'
+
+

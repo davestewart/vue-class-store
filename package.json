@@ -1,12 +1,14 @@
 {
   "name": "vue-class-store",
   "description": "Zero-boilerplate class-based stores for Vue",
-  "version": "1.0.0-beta-3",
+  "version": "1.0.0-beta-4",
   "author": "Dave Stewart",
   "license": "ISC",
-  "main": "src/index.ts",
-  "module": "src/index.ts",
+  "main": "dist/vue-class-store.js",
+  "module": "dist/vue-class-store.esm.ts",
   "scripts": {
+    "dev": "rollup -c build/rollup.js -w",
+    "build": "rollup -c build/rollup.js",
     "stats": "node dev/stats.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,12 +17,25 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.8.3",
+    "@rollup/plugin-buble": "^0.21.3",
+    "@rollup/plugin-commonjs": "^11.1.0",
+    "@rollup/plugin-node-resolve": "^7.1.3",
+    "read-package-json": "^2.1.1",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.10.2",
+    "rollup-plugin-license": "^2.0.1",
+    "rollup-plugin-typescript2": "^0.27.1",
+    "rollup-plugin-uglify": "^6.0.4",
+    "rollup-plugin-vue": "^5.1.7",
     "sloc": "^0.2.1",
     "tslib": "^2.0.0",
-    "typescript": "^3.9.2"
+    "typescript": "^3.9.2",
+    "vue": "^2.6.11",
+    "vue-template-compiler": "^2.6.11"
   },
   "files": [
-    "src/lib/*.*"
+    "dist/*",
+    "src/*"
   ],
   "directories": {
     "test": "test"

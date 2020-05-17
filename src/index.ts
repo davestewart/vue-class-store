@@ -79,7 +79,7 @@ export default function VueStore<T extends Created> (constructor: T): T {
 }
 
 VueStore.Vue = function VueFactory (options): void {
-  throw new Error('You need to install VueStore decorator before using it')
+  throw new Error('You need to install VueStore before using it')
 }
 
 VueStore.install = function (Vue) {
@@ -87,5 +87,3 @@ VueStore.install = function (Vue) {
 }
 
 VueStore.create = makeVue
-
-VueStore.options = makeOptions

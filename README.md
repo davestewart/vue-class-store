@@ -1,34 +1,20 @@
 # Vue Class Store
 
-> Zero-boilerplate class-based stores for Vue
+> Fully-reactive, zero-boilerplate, class-based stores for Vue
 
 ## Abstract
 
-### Problem
+Vue Class Store is a one-liner upgrade that adds reactivity, computed properties, caching and watches to regular TS/ES6 classes.
 
-Vue's system of reactive data, computed properties and watchers makes it very easy to write expressive code.
+It allows you to leverage the advanced reactivity features of Vue whilst retaining the familiar classical syntax, structure and functionality such as simple instantiation, parametized constructors and inheritance – with zero, setup or bloat.
 
-Unfortunately, to take advantage, you need to structure your data in a non-standard maner using the verbose Options format or even more verbose and structured Vuex schema and module setup.
+With Vue Class Store, there's no more refactoring data into components or abstracting into modules, mutations and getters, you simply write and instantiate classes, then work with them directly.
 
-This makes it very difficult to manage, rewrite, extend or refactor your logic and data once in, and introduces a lot of boilerplate, new concepts and so-called best practices. 
+Stores can be used locally or globally, outside or inside components, or even nested in other stores and are fully compatible with the Vue ecosystem – because they are transparently converted into `Vue` instances.
 
-### Solution
-
-Vue Class Store is a one-liner TypeScript decorator or single ES6 helper function that makes any class fully reactive, with computed properties, watches and methods.
-
-Converted classes can be used locally or globally, outside or inside components, or even nested in other stores and are fully compatible with the Vue ecosystem because they are converted into `Vue` instances.
-
-Working with class stores is easy as they are *just* classes, which means you can even inherit from superclasses, and debugging and breakpoints work like you expect!
+Working with stores in both the IDE and DevTools is easy as they are *just* classes, which means source maps, debugging and breakpoints work like you expect!
 
 ![devtools](https://raw.githubusercontent.com/davestewart/vue-class-store/master/dev/devtools.png)
-
-### Features
-
-- Zero boilerplate
-- Reactive data, computed properties and watches
-- Class-based syntax
-- Proper inheritance
-- IDE / DevTools friendly
 
 ## Installation
 

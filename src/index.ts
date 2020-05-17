@@ -1,21 +1,8 @@
-import Vue, { ComponentOptions } from 'vue'
+import { ComponentOptions } from 'vue'
 
 type Created = { new (...args: any[]): {} }
 
 type Instance = Record<any, any>
-
-export default function VueStore<T extends Created> (constructor: T): T {
-  function construct (...args: any[]) {
-    const instance = new (constructor as Created)(...args)
-    return makeVueModel(instance)
-  }
-  return (construct as unknown) as T
-}
-
-export function makeVueModel<T extends Instance> (model: T): T {
-  const options = makeOptions(model)
-  return (new Vue(options) as unknown) as T
-}
 
 export function makeOptions(model: Instance): ComponentOptions<any> {
   // prototype
@@ -77,3 +64,28 @@ export function makeOptions(model: Instance): ComponentOptions<any> {
     data,
   }
 }
+
+export function makeVue<T extends Instance> (model: T): T {
+  const options = makeOptions(model)
+  return (new VueStore.Vue(options) as unknown) as T
+}
+
+export default function VueStore<T extends Created> (constructor: T): T {
+  function construct (...args: any[]) {
+    const instance = new (constructor as Created)(...args)
+    return makeVue(instance)
+  }
+  return (construct as unknown) as T
+}
+
+VueStore.Vue = function VueFactory (options): void {
+  throw new Error('You need to install VueStore decorator before using it')
+}
+
+VueStore.install = function (Vue) {
+  VueStore.Vue = Vue
+}
+
+VueStore.create = makeVue
+
+VueStore.options = makeOptions

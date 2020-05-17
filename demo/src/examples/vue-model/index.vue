@@ -16,7 +16,7 @@
 import { makeRectangle } from './Rectangle'
 
 export default {
-  name: 'VueModelExample',
+  name: 'VueModel',
 
   computed: {
     model () {

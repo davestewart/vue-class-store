@@ -123,14 +123,14 @@ export default {
 
 Alternatively, you can convert any non-decorated class using the static `.create()` method:
 
-```javascript
+```typescript
 import VueStore from 'vue-class-store'
 import Model from './Model'
 
-const store = VueStore.create(new Model(1, 2, 3))
+const reactive: Model = VueStore.create(new Model(1, 2, 3))
 ```
 
-Wherever you do it, the decorator will return a new `Vue` instance, but your IDE will think it's an instance of the original class, and it will have *exactly* the same properties.
+Wherever you do it, the decorator will return a new reactive `Vue` instance, but your IDE will think it's an instance of the original class, and it will have *exactly* the same properties.
 
 ## Inheritance
 
@@ -184,6 +184,14 @@ class Square extends Rectangle { ... }
 class SquareStore extends Square { } 
 ```
 
+Alternatively, use inline creation:
+
+```typescript
+import Square from './Square'
+
+const model: Square = VueStore.create(new Square(10))
+```
+
 ## Global / shared state
 
 Because the class itself is reactive, you could inject it into a component tree, simulating global state:
@@ -221,6 +229,7 @@ export default {
 The demo folder compares various state management approaches; check `demo/src/examples/*` :
 
 - [Basic Class Store](./src/demo/examples/class-store)
+- [Inline Class Store](./src/demo/examples/class-store-inline)
 - [Class Store with Inheritance](./src/demo/examples/class-store-inheritance)
 - [Global Class Store](./src/demo/examples/class-store-global)
 - [Vue Component](./src/demo/examples/vue-component)

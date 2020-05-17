@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p>Simple and intuitive reactive, computed, and watched properties, within a single, reusable, extensible model</p>
+    <p>Convert any class into a reactive, computed store in one line</p>
     <hr>
     <RectangleView
       :width.sync="model.width"
@@ -13,14 +13,14 @@
 </template>
 
 <script>
-import { RectangleStore } from './Rectangle'
+import { makeStore } from './store'
 
 export default {
-  name: 'BasicClassStore',
+  name: 'InlineClassStore',
 
   computed: {
     model () {
-      return new RectangleStore(20, 10)
+      return makeStore()
     }
   },
 }

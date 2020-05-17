@@ -15,7 +15,7 @@
 <script>
 
 export default {
-  name: 'VueComponentExample',
+  name: 'VueComponent',
 
   data () {
     return {

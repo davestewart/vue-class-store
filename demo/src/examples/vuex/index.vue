@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p>Completely verbose, proprietary model and accessor formats required to do even simple updates</p>
+    <p>Verbose, proprietary, and often tricky model and accessor formats required to do even simple updates</p>
     <hr>
     <RectangleView
       :width="width"
@@ -16,7 +16,7 @@
 
 <script>
 export default {
-  name: 'VuexExample',
+  name: 'Vuex',
 
   computed: {
     width () {

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p>Independent global and local data working together, using plain JavaScript</p>
+    <p>Independent global and local data working together, with no special setup</p>
     <hr>
     <p>Managing {{ model.items.length }} items ( {{ model.numSelected }} selected )</p>
     <button @click="model.addItem">Add Item</button>
@@ -16,7 +16,7 @@ import { ItemsStore } from './ItemsStore'
 import Item from './Item.vue'
 
 export default {
-  name: 'ClassStoreGlobalExample',
+  name: 'GlobalClassStore',
 
   components: {
     Item: Item,

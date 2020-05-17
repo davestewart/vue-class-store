@@ -17,7 +17,7 @@
 import { SquareStore } from './Square'
 
 export default {
-  name: 'ClassStoreInheritanceExample',
+  name: 'ClassStoreInheritance',
 
   computed: {
     model () {

@@ -132,7 +132,7 @@ const store = VueStore.create(new Model(1, 2, 3))
 
 Wherever you do it, the decorator will return a new `Vue` instance, but your IDE will think it's an instance of the original class, and it will have *exactly* the same properties.
 
-### Inheritance
+## Inheritance
 
 The decorator supports class inheritance, by chaining the prototypes as Vue `extends` options, meaning you can do things like this:
 
@@ -184,7 +184,7 @@ class Square extends Rectangle { ... }
 class SquareStore extends Square { } 
 ```
 
-### Global / shared state
+## Global / shared state
 
 Because the class itself is reactive, you could inject it into a component tree, simulating global state:
 

@@ -93,7 +93,7 @@ export class Store {
 }
 ```
 
-Behind the scenes, the decorator will convert the class to a new Vue instance and return it.
+When the class is instantiated, the decorator will convert the class to a new Vue instance and return it.
 
 ### Instantiation
 
@@ -121,7 +121,7 @@ export default {
 }
 ```
 
-Alternatively, you can convert any non-decorated class using the static `.create()` method:
+Alternatively, you can make any non-decorated class reactive using the static `.create()` method:
 
 ```typescript
 import VueStore from 'vue-class-store'

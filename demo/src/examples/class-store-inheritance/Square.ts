@@ -4,8 +4,7 @@ import { Rectangle } from '../class-store/Rectangle'
 export class Square extends Rectangle {
 
   constructor (size) {
-    super(size)
-    this.update(size)
+    super(size, size)
     this.log(`Square constructor called!`)
   }
 

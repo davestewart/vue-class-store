@@ -216,7 +216,7 @@ Because all data is passed by the constructor, Vue Class Store just works with S
 
 To set up, add a plugin file and config option:
 
-```
+```javascript
 // plugins/vue-class-store.js
 import Vue from 'vue'
 import VueStore from 'vue-class-store'
@@ -224,7 +224,7 @@ import VueStore from 'vue-class-store'
 Vue.use(VueStore.install)
 ```
 
-```
+```javascript
 // nuxt.config.js
 plugins: [
   '~/plugins/vue-class-store',
@@ -250,7 +250,7 @@ Alternatives:
 - [Vue Model](./demo/src/examples/vue-model)
 - [Vuex](./demo/src/examples/vuex)
 
-To run the demo, clone the repo and run the `demo` script:
+To run the demo, clone the repo and install and run the `demo`:
 
 ```
 git clone https://github.com/davestewart/vue-class-store.git
@@ -271,6 +271,4 @@ The package has various scripts:
 
 - `npm run dev` - build and watch for development
 - `npm run build` - build for production
-
 - `npm run demo` - run the demo
-

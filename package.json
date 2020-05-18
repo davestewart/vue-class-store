@@ -1,11 +1,19 @@
 {
   "name": "vue-class-store",
   "description": "Zero-boilerplate class-based stores for Vue",
-  "version": "1.0.0-beta-4",
+  "version": "1.0.0-beta-5",
   "author": "Dave Stewart",
   "license": "ISC",
   "main": "dist/vue-class-store.js",
   "module": "dist/vue-class-store.esm.ts",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/*",
+    "src/*"
+  ],
+  "directories": {
+    "test": "test"
+  },
   "scripts": {
     "dev": "rollup -c build/rollup.js -w",
     "build": "rollup -c build/rollup.js",
@@ -32,13 +40,6 @@
     "typescript": "^3.9.2",
     "vue": "^2.6.11",
     "vue-template-compiler": "^2.6.11"
-  },
-  "files": [
-    "dist/*",
-    "src/*"
-  ],
-  "directories": {
-    "test": "test"
   },
   "keywords": [
     "store",

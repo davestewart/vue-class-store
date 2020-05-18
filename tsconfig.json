@@ -14,8 +14,7 @@
     "sourceMap": true,
     "baseUrl": ".",
     "types": [
-      "node",
-      "jest"
+      "node"
     ],
     "typeRoots": [
       "node_modules/@types"

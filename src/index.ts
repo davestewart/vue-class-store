@@ -1,10 +1,12 @@
-import { ComponentOptions } from 'vue'
+import { VueConstructor, ComponentOptions } from 'vue'
 
-type Created = { new (...args: any[]): {} }
+type C = { new (...args: any[]): {} }
 
-type Instance = Record<any, any>
+type R = Record<any, any>
 
-export function makeOptions(model: Instance): ComponentOptions<any> {
+let vue: VueConstructor
+
+export function makeOptions(model: R): ComponentOptions<any> {
   // prototype
   const prototype = Object.getPrototypeOf(model)
   if (!prototype || prototype === Object.prototype) {
@@ -18,11 +20,10 @@ export function makeOptions(model: Instance): ComponentOptions<any> {
   const descriptors = Object.getOwnPropertyDescriptors(prototype)
 
   // options
-  const name = prototype.constructor.name
-  const data = {}
-  const computed = {}
-  const methods = {}
-  const watch = {}
+  const data: R = {}
+  const computed: R = {}
+  const methods: R = {}
+  const watch: R = {}
 
   // data, string watches
   Object.keys(model).forEach(key => {
@@ -56,7 +57,7 @@ export function makeOptions(model: Instance): ComponentOptions<any> {
 
   // return
   return {
-    name,
+    name: prototype.constructor.name,
     extends: extendsOptions,
     computed,
     methods,
@@ -65,25 +66,24 @@ export function makeOptions(model: Instance): ComponentOptions<any> {
   }
 }
 
-export function makeVue<T extends Instance> (model: T): T {
+export function makeVue<T extends R> (model: T): T {
   const options = makeOptions(model)
-  return (new VueStore.Vue(options) as unknown) as T
+  if (!vue) {
+    throw new Error('You need call Vue.use(VueStore.install) before using Vue Class Store')
+  }
+  return (new vue(options) as unknown) as T
 }
 
-export default function VueStore<T extends Created> (constructor: T): T {
+export default function VueStore<T extends C> (constructor: T): T {
   function construct (...args: any[]) {
-    const instance = new (constructor as Created)(...args)
+    const instance = new (constructor as C)(...args)
     return makeVue(instance)
   }
   return (construct as unknown) as T
 }
 
-VueStore.Vue = function VueFactory (options): void {
-  throw new Error('You need to install VueStore before using it')
-}
-
-VueStore.install = function (Vue) {
-  VueStore.Vue = Vue
-}
-
 VueStore.create = makeVue
+
+VueStore.install = function (Vue: VueConstructor) {
+  vue = Vue
+}

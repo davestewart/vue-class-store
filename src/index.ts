@@ -1,4 +1,4 @@
-import { VueConstructor, ComponentOptions } from 'vue'
+import { ComponentOptions, VueConstructor } from 'vue'
 
 type C = { new (...args: any[]): {} }
 
@@ -38,7 +38,7 @@ export function makeOptions(model: R): ComponentOptions<any> {
 
   // function watches, methods, computed
   Object.keys(descriptors).forEach(key => {
-    if (key !== 'constructor') {
+    if (key !== 'constructor' && !key.startsWith('__')) {
       const { value, get, set } = descriptors[key]
       if (key.startsWith('on:')) {
         watch[key.substring(3)] = value

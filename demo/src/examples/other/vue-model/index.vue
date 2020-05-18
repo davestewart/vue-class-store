@@ -1,6 +1,10 @@
 <template>
   <div>
     <p>Logic and data moved into a factory, but that logic still requires a non standard format</p>
+    <CodeView>
+      examples/other/vue-model/index.vue
+      examples/other/vue-model/Rectangle.js
+    </CodeView>
     <hr>
     <RectangleView
       :width.sync="model.width"

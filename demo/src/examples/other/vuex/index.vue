@@ -1,6 +1,11 @@
 <template>
   <div>
     <p>Verbose, proprietary, and often tricky model and accessor formats required to do even simple updates</p>
+    <CodeView>
+      examples/other/vuex/index.vue
+      examples/other/vuex/store/index.ts
+      examples/other/vuex/store/modules/rectangle.js
+    </CodeView>
     <hr>
     <RectangleView
       :width="width"

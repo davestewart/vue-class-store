@@ -239,16 +239,16 @@ The demo folder compares various state management approaches; check `demo/src/ex
 
 Class Store:
 
-- [Basic Class Store](./demo/src/examples/class-store)
-- [Inline Class Store](./demo/src/examples/class-store-inline)
-- [Class Store with Inheritance](./demo/src/examples/class-store-inheritance)
-- [Global Class Store](./demo/src/examples/class-store-global)
+- [Basic Class Store](demo/src/examples/class-store/basic)
+- [Inline Class Store](demo/src/examples/class-store/inline)
+- [Class Store with Inheritance](demo/src/examples/class-store/inherit)
+- [Global Class Store](demo/src/examples/class-store/global)
 
 Alternatives:
 
-- [Vue Component](./demo/src/examples/vue-component)
-- [Vue Model](./demo/src/examples/vue-model)
-- [Vuex](./demo/src/examples/vuex)
+- [Vue Component](demo/src/examples/other/vue-component)
+- [Vue Model](demo/src/examples/other/vue-model)
+- [Vuex](demo/src/examples/other/vuex)
 
 To run the demo, clone the repo and install and run the `demo`:
 

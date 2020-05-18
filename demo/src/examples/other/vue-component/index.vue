@@ -1,6 +1,9 @@
 <template>
   <div>
     <p>All logic and data needs to be baked into the visual component itself</p>
+    <CodeView>
+      examples/other/vue-component/index.vue
+    </CodeView>
     <hr>
     <RectangleView
       :width.sync="width"

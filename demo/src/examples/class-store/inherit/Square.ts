@@ -1,5 +1,5 @@
 import VueStore from 'vue-class-store'
-import { Rectangle } from '../class-store/Rectangle'
+import { Rectangle } from '../basic/Rectangle'
 
 export class Square extends Rectangle {
 

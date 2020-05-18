@@ -1,6 +1,11 @@
 <template>
   <div>
     <p>Independent global and local data working together, with no special setup</p>
+    <CodeView>
+      examples/class-store/global/index.vue
+      examples/class-store/global/Item.vue
+      examples/class-store/global/ItemsStore.ts
+    </CodeView>
     <hr>
     <p>Managing {{ model.items.length }} items ( {{ model.numSelected }} selected )</p>
     <button @click="model.addItem">Add Item</button>

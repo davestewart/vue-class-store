@@ -6,14 +6,14 @@ import * as examples from '../examples'
 
 Vue.use(VueRouter)
 
-function route (path, component) {
+function route (path, component, folder = '') {
   const title = (component.name || '').replace(/([a-z])([A-Z])/g, '$1 $2')
-  return { path, component, title, meta: { title } }
+  return { path, component, title, meta: { folder, title } }
 }
 
 function example (path, component) {
-  const folder = component.__file.split('/')[2]
-  return route(`/${folder + path}`, component)
+  const [src, examples, folder, file] = component.__file.split('/')
+  return route(`/${folder + path}`, component, folder)
 }
 
 export function getRoutes (group = false) {

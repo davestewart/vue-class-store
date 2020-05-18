@@ -2,7 +2,8 @@ import Vue from 'vue'
 import Demo from './Demo.vue'
 import router from './router'
 import RectangleView from './components/RectangleView.vue'
-import store from './examples/vuex/store'
+import CodeView from './components/CodeView.vue'
+import store from './examples/other/vuex/store'
 import './styles/index.css'
 
 // install
@@ -11,6 +12,7 @@ Vue.use(VueStore.install)
 
 // global components
 Vue.component('RectangleView', RectangleView)
+Vue.component('CodeView', CodeView)
 
 // setup and mount
 Vue.config.productionTip = false

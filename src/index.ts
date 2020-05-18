@@ -20,6 +20,7 @@ export function makeOptions(model: R): ComponentOptions<any> {
   const descriptors = Object.getOwnPropertyDescriptors(prototype)
 
   // options
+  const name = prototype.constructor.name
   const data: R = {}
   const computed: R = {}
   const methods: R = {}
@@ -57,7 +58,7 @@ export function makeOptions(model: R): ComponentOptions<any> {
 
   // return
   return {
-    name: prototype.constructor.name,
+    name,
     extends: extendsOptions,
     computed,
     methods,

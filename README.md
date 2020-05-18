@@ -10,9 +10,9 @@ It allows you to leverage the advanced reactivity features of Vue whilst retaini
 
 With Vue Class Store there's no refactoring data into components or abstracting into modules, writing mutations or mapping getters; you simply write and instantiate classes then work with them directly.
 
-Stores can be used locally or globally, outside or inside components, or even nested in other stores and are fully compatible with the Vue ecosystem – because they are transparently converted into `Vue` instances.
+Stores can be used locally or globally, outside or inside components, nested in other stores and are fully compatible with the Vue ecosystem (including Nuxt) because they are transparently converted into `Vue` instances.
 
-Working with stores in both the IDE and DevTools is easy as they are *just* classes, which means source maps, debugging and breakpoints work like you expect!
+Working with stores in both the IDE and DevTools is easy as they are *just* classes, which means source maps, debugging and breakpoints work like you expect:
 
 ![devtools](https://raw.githubusercontent.com/davestewart/vue-class-store/master/dev/devtools.png)
 
@@ -30,7 +30,7 @@ npm i vue-class-store
 yarn add vue-class-store
 ```
 
-In your main project file, install the extension: 
+In your main project file, install the plugin:
 
 ```javascript
 import Vue from 'vue'
@@ -79,7 +79,7 @@ export class Store {
 }
 ```
 
-When the class is instantiated, the decorator will convert the class to a new Vue instance and return it.
+When the class is instantiated, the decorator will convert it to a new Vue instance and return it.
 
 ### Instantiation
 
@@ -210,17 +210,45 @@ export default {
 }
 ```
 
+## Nuxt
+
+Because all data is passed by the constructor, Vue Class Store just works with SSR.
+
+To set up, add a plugin file and config option:
+
+```
+// plugins/vue-class-store.js
+import Vue from 'vue'
+import VueStore from 'vue-class-store'
+
+Vue.use(VueStore.install)
+```
+
+```
+// nuxt.config.js
+plugins: [
+  '~/plugins/vue-class-store',
+],
+```
+
 ## Demo
 
-The demo folder compares various state management approaches; check `demo/src/examples/*` :
+### Vue
 
-- [Basic Class Store](./src/demo/examples/class-store)
-- [Inline Class Store](./src/demo/examples/class-store-inline)
-- [Class Store with Inheritance](./src/demo/examples/class-store-inheritance)
-- [Global Class Store](./src/demo/examples/class-store-global)
-- [Vue Component](./src/demo/examples/vue-component)
-- [Vue Model](./src/demo/examples/vue-model)
-- [Vuex](./src/demo/examples/vuex)
+The demo folder compares various state management approaches; check `demo/src/examples/*` .
+
+Class Store:
+
+- [Basic Class Store](./demo/src/examples/class-store)
+- [Inline Class Store](./demo/src/examples/class-store-inline)
+- [Class Store with Inheritance](./demo/src/examples/class-store-inheritance)
+- [Global Class Store](./demo/src/examples/class-store-global)
+
+Alternatives:
+
+- [Vue Component](./demo/src/examples/vue-component)
+- [Vue Model](./demo/src/examples/vue-model)
+- [Vuex](./demo/src/examples/vuex)
 
 To run the demo, clone the repo and run the `demo` script:
 
@@ -230,3 +258,19 @@ cd vue-class-store/demo
 npm install
 npm run demo
 ```
+
+### Nuxt
+
+Nuxt has its own demo here:
+
+- https://github.com/davestewart/nuxt-class-store
+
+## Development
+
+The package has various scripts:
+
+- `npm run dev` - build and watch for development
+- `npm run build` - build for production
+
+- `npm run demo` - run the demo
+

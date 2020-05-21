@@ -112,7 +112,7 @@ This functionally-identical object is then returned, and thanks to TypeScript ge
 
 Additionally, because all methods have their scope rebound to the original class, breakpoints will stop in the right place, and you can even call the class keyword `super` and it will resolve correctly up the prototype chain.
 
-![devtools](https://raw.githubusercontent.com/davestewart/vue-class-store/master/dev/devtools.png)
+![devtools](docs/devtools.png)
 
 Note that the object will of course be a `Vue` or `Proxy` instance, so running code like  `store instanceof Store` will return `false` .
 

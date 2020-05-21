@@ -1,10 +1,8 @@
-import { ComponentOptions, VueConstructor } from 'vue'
+import Vue, { ComponentOptions, VueConstructor } from 'vue'
 
 type C = { new (...args: any[]): {} }
 
 type R = Record<any, any>
-
-let vue: VueConstructor
 
 function getDescriptors (model: R) {
   const prototype = Object.getPrototypeOf(model)
@@ -70,10 +68,7 @@ export function makeOptions(model: R): ComponentOptions<any> {
 
 export function makeVue<T extends R> (model: T): T {
   const options = makeOptions(model)
-  if (!vue) {
-    throw new Error('You need call Vue.use(VueStore.install) before using Vue Class Store')
-  }
-  return (new vue(options) as unknown) as T
+  return (new Vue(options) as unknown) as T
 }
 
 export default function VueStore<T extends C> (constructor: T): T {
@@ -85,7 +80,3 @@ export default function VueStore<T extends C> (constructor: T): T {
 }
 
 VueStore.create = makeVue
-
-VueStore.install = function (Vue: VueConstructor) {
-  vue = Vue
-}

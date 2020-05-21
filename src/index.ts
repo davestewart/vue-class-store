@@ -1,4 +1,4 @@
-import Vue, { ComponentOptions, VueConstructor } from 'vue'
+import { computed, reactive, watch } from 'vue'
 
 type C = { new (...args: any[]): {} }
 
@@ -14,23 +14,29 @@ function getDescriptors (model: R) {
   return { ...prototypeDescriptors, ...descriptors }
 }
 
-export function makeOptions(model: R): ComponentOptions<any> {
-  // prototype
-  const prototype = Object.getPrototypeOf(model)
-  const descriptors = getDescriptors(prototype)
+function getValue (value: Record<any, any>, path: string | string[]) {
+  const segments = typeof path === 'string'
+    ? path.split('.')
+    : path
+  const segment: string | undefined = segments.shift()
+  return segment
+    ? getValue(value[segment], segments)
+    : value
+}
+
+export function makeReactive (model) {
+  // properties
+  const descriptors = getDescriptors(model)
 
   // options
-  const name = prototype.constructor.name
-  const data: R = {}
-  const computed: R = {}
-  const methods: R = {}
-  const watch: R = {}
+  const data = {}
+  const watched = {}
 
   // data, string watches
-  Object.keys(model).forEach(key => {
+  Object.keys(model).forEach((key: string) => {
     const value = model[key]
     if (key.startsWith('on:')) {
-      watch[key.substring(3)] = value
+      watched[key.substring(3)] = value
     }
     else {
       data[key] = value
@@ -38,45 +44,54 @@ export function makeOptions(model: R): ComponentOptions<any> {
   })
 
   // function watches, methods, computed
-  Object.keys(descriptors).forEach(key => {
-    if (key !== 'constructor' && !key.startsWith('__')) {
-      const { value, get, set } = descriptors[key]
-      if (key.startsWith('on:')) {
-        watch[key.substring(3)] = value
+  const state = reactive({
+    ...data,
+    ...Object.keys(descriptors).reduce((output, key) => {
+      if (key !== 'constructor' && !key.startsWith('__')) {
+        const { value, get, set } = descriptors[key]
+        // watch
+        if (key.startsWith('on:')) {
+          watched[key.substring(3)] = value
+        }
+        // method
+        else if (value) {
+          output[key] = (...args) => value.call(state, ...args)
+        }
+        // computed
+        else if (get && set) {
+          output[key] = computed({
+            set: (value) => set.call(state, value),
+            get: () => get.call(state),
+          })
+        }
+        else if (get) {
+          output[key] = computed(() => get.call(state))
+        }
       }
-      else if (value) {
-        methods[key] = value
-      }
-      else if (get && set) {
-        computed[key] = { get, set }
-      }
-      else if (get) {
-        computed[key] = get
-      }
+      return output
+    }, {}),
+  })
+
+  // set up watches
+  Object.keys(watched).forEach(key => {
+    const callback: Function = typeof watched[key] === 'string'
+      ? model[getValue(model, 'on:' + key)]
+      : watched[key]
+    if (typeof callback === 'function') {
+      watch(() => getValue(state, key), callback.bind(state))
     }
   })
 
   // return
-  return {
-    name,
-    computed,
-    methods,
-    watch,
-    data,
-  }
-}
-
-export function makeVue<T extends R> (model: T): T {
-  const options = makeOptions(model)
-  return (new Vue(options) as unknown) as T
+  return state
 }
 
 export default function VueStore<T extends C> (constructor: T): T {
   function construct (...args: any[]) {
     const instance = new (constructor as C)(...args)
-    return makeVue(instance)
+    return makeReactive(instance)
   }
   return (construct as unknown) as T
 }
 
-VueStore.create = makeVue
+VueStore.create = makeReactive

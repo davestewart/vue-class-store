@@ -1,7 +1,7 @@
 {
   "name": "vue-class-store",
   "description": "Universal Vue stores you write once and use anywhere",
-  "version": "2.0.3",
+  "version": "3.0.0",
   "author": "Dave Stewart",
   "license": "MIT",
   "main": "dist/vue-class-store.js",
@@ -17,11 +17,10 @@
   "scripts": {
     "dev": "rollup -c build/rollup.js -w",
     "build": "rollup -c build/rollup.js",
-    "stats": "node dev/stats.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "peerDependencies": {
-    "vue": "^2.6.11"
+    "vue": "^3.0.0-beta.14"
   },
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.8.3",
@@ -37,7 +36,7 @@
     "rollup-plugin-vue": "^5.1.7",
     "tslib": "^2.0.0",
     "typescript": "^3.9.2",
-    "vue": "^2.6.11",
+    "vue": "^3.0.0-beta.14",
     "vue-template-compiler": "^2.6.11"
   },
   "keywords": [

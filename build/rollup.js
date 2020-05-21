@@ -52,7 +52,10 @@ const umd = {
       },
     }),
     commonjs(),
-    buble(),
+    buble({
+      // @see https://github.com/vuejs/vue-hackernews-2.0/issues/87
+      objectAssign: 'Object.assign',
+    }),
   ],
 }
 

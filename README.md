@@ -2,9 +2,7 @@
 
 > Universal Vue stores you write once and use anywhere
 
-<p align="center">
-  <image src="docs/logo.png" alt="logo" align="center">
-</p>
+![logo](docs/logo.png)
 
 ## Abstract
 

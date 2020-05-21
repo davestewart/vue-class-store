@@ -1,45 +1,36 @@
 # Vue Class Store
 
-> Fully-reactive, zero-boilerplate, class-based stores for Vue
+> Universal Vue stores you write once and use anywhere
+
+![logo](docs/logo.png)
 
 ## Abstract
 
-Vue Class Store is a one-liner upgrade that adds reactivity, computed properties, caching and watches to regular TS/ES6 classes.
+### So Vue, Vuex and Vue Class Store walk into a bar...
 
-It allows you to leverage the advanced reactivity features of Vue whilst retaining familiar classical syntax, structure and functionality, such as simple instantiation, parametized constructors and inheritance – with zero setup or bloat.
+**Vue says:** "I'll give you reactivity, computed properties and watches, but only in components, only using a special objects-and-function schema, and I demand initial values be passed in from a parent component using props! I don't get along particularly well with TypeScript either, so good luck with figuring that one out, buddy"
 
-With Vue Class Store there's no refactoring data into components or abstracting into modules, writing mutations or mapping getters; you simply write and instantiate classes then work with them directly.
+**Vuex says:** "I'll give you global reactivity and computed properties, but I'm going to call them esoteric names and require you set them up globally with a convoluted schema, access them only through a centralised store, and I'll force you to make all updates through string-based paths, with different formats, helpers, terminology and best practices. I'll also make it difficult to go more than a couple of levels deep, and I'll give you watches but you'll hate them so probably best not to use those either"
 
-Stores can be used locally or globally, outside or inside components, nested in other stores and are fully compatible with the Vue ecosystem (including Nuxt) because they are transparently converted into `Vue` instances.
+**Vue Class Store says:** "I'll give you reactivity, computed properties and watches, written in standard JavaScript or TypeScript, with no setup or boilerplate, and you can use me anywhere"
 
-Working with stores in both the IDE and DevTools is easy as they are *just* classes, which means source maps, debugging and breakpoints work like you expect:
+*The end*
 
-![devtools](https://raw.githubusercontent.com/davestewart/vue-class-store/master/dev/devtools.png)
+## Usage
 
-## Installation
-
-### Setup
+### Installation
 
 Install the package from NPM:
 
 ```bash
-npm i vue-class-store
+#vue 2
+npm i vue-class-store@^2.0.0
+
+#vue 3
+npm i vue-class-store@^3.0.0
 ```
 
-```bash
-yarn add vue-class-store
-```
-
-In your main project file, install the plugin:
-
-```javascript
-import Vue from 'vue'
-import VueStore from 'vue-class-store'
-
-Vue.use(VueStore.install)
-```
-
-## Usage
+Yarn users, replace `npm i` with `yarn add`.
 
 ### Declaration
 
@@ -79,8 +70,6 @@ export class Store {
 }
 ```
 
-When the class is instantiated, the decorator will convert it to a new Vue instance and return it.
-
 ### Instantiation
 
 To use a store, simply instantiate the class.
@@ -88,44 +77,53 @@ To use a store, simply instantiate the class.
 You can do this outside of a component, and it will be completely reactive:
 
 ```typescript
-const store = new Store(10)
+const store = new Store({ ... })
 ```
 
 Or you can instantiate within a component:
 
 ```javascript
 export default {
-  props: {
-    value: Number
-  },
-  
+  ...
   computed: {
     model () {
-      return new Store(this.value)
+      return new Store({ ... })
     }
   }
 }
 ```
 
-Alternatively, you can make any non-decorated class reactive using the static `.create()` method:
+Alternatively, you can make any non-decorated class reactive on the fly using the static `.create()` method:
 
 ```typescript
 import VueStore from 'vue-class-store'
-import Model from './Model'
+import Store from './Store'
 
-const reactive: Model = VueStore.create(new Model(1, 2, 3))
+const store: Store = VueStore.create(new Store({ ... }))
 ```
 
-Wherever you do it, the decorator will return a new reactive `Vue` instance, but your IDE will think it's an instance of the original class, and it will have *exactly* the same properties.
+## How it works
+
+This is probably a good point to stop and explain what is happening under the hood.
+
+Immediately after the class is instantiated, the decorator function extracts the class' properties and methods and rebuilds either a new Vue instance (Vue 2) or a Proxy object (Vue 3).
+
+This functionally-identical object is then returned, and thanks to TypeScript generics your IDE and the TypeScript compiler will think it's an instance of the *original* class, so code completion will just work.
+
+Additionally, because all methods have their scope rebound to the original class, breakpoints will stop in the right place, and you can even call the class keyword `super` and it will resolve correctly up the prototype chain.
+
+![devtools](https://raw.githubusercontent.com/davestewart/vue-class-store/master/dev/devtools.png)
+
+Note that the object will of course be a `Vue` or `Proxy` instance, so running code like  `store instanceof Store` will return `false` .
 
 ## Inheritance
 
-The decorator supports class inheritance, by chaining the prototypes as Vue `extends` options, meaning you can do things like this:
+The decorator supports class inheritance meaning you can do things like this:
 
 ```typescript
 class Rectangle {
-  width: number
-  height: number
+  width = 0
+  height = 0
   
   constructor (width, height) {
     this.width = width
@@ -186,7 +184,7 @@ Because the class itself is reactive, you could inject it into a component tree,
 export default {
   provide () {
     return {
-      $store: new Store(10)
+      $products: new ProductsStore()
     }
   },
 }
@@ -195,80 +193,33 @@ export default {
 ```javascript
 export default {
   inject: [
-    '$store'
+    '$products'
   ],
   
   computed: {
-    value () {
-      return this.$store.value
+    items () {
+      return this.$products.items
     }
   },
   
-  setValue (value) {
-    this.$store.value = value
+  filterProducts (value) {
+    this.$products.filter = value
   }
 }
 ```
 
-## Nuxt
-
-Because all data is passed by the constructor, Vue Class Store just works with SSR.
-
-To set up, add a plugin file and config option:
-
-```javascript
-// plugins/vue-class-store.js
-import Vue from 'vue'
-import VueStore from 'vue-class-store'
-
-Vue.use(VueStore.install)
-```
-
-```javascript
-// nuxt.config.js
-plugins: [
-  '~/plugins/vue-class-store',
-],
-```
-
-## Demo
-
-### Vue
-
-The demo folder compares various state management approaches; check `demo/src/examples/*` .
-
-Class Store:
-
-- [Basic Class Store](demo/src/examples/class-store/basic)
-- [Inline Class Store](demo/src/examples/class-store/inline)
-- [Class Store with Inheritance](demo/src/examples/class-store/inherit)
-- [Global Class Store](demo/src/examples/class-store/global)
-
-Alternatives:
-
-- [Vue Component](demo/src/examples/other/vue-component)
-- [Vue Model](demo/src/examples/other/vue-model)
-- [Vuex](demo/src/examples/other/vuex)
-
-To run the demo, clone the repo and install and run the `demo`:
-
-```
-git clone https://github.com/davestewart/vue-class-store.git
-cd vue-class-store/demo
-npm install
-npm run demo
-```
-
-### Nuxt
-
-Nuxt has its own demo here:
-
-- https://github.com/davestewart/nuxt-class-store
-
 ## Development
 
-The package has various scripts:
+### Demo
 
-- `npm run dev` - build and watch for development
-- `npm run build` - build for production
-- `npm run demo` - run the demo
+The library has demos for Vue 2, Vue 3 and Nuxt, and can be found in the following repo:
+
+- https://github.com/davestewart/vue-class-store-demos
+
+### Scripts
+
+The package uses Yarn, and has only two scripts, to build for development and production:
+
+- `yarn dev` - build and watch for development
+- `yarn build` - build for production
+

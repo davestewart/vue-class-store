@@ -12,7 +12,6 @@ import typescript from 'rollup-plugin-typescript2'
 import { uglify } from 'rollup-plugin-uglify'
 
 const pkg = require('../package.json')
-const external = Object.keys(pkg.dependencies || {})
 const pkgName = pkg.name
 const className = pkgName.replace(/(^\w|-\w)/g, c => c.replace('-', '').toUpperCase())
 
@@ -22,6 +21,9 @@ function output (ext, format = 'umd') {
     file: `dist/${pkgName}.${ext}`,
     format: format,
     exports: 'named',
+    globals: {
+      vue: 'Vue',
+    },
   }
 }
 
@@ -31,7 +33,9 @@ function output (ext, format = 'umd') {
 
 const umd = {
   input: 'src/index.ts',
-  external: external,
+  external: [
+    'vue'
+  ],
   output: output('js'),
   plugins: [
     resolve({

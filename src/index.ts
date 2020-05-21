@@ -6,18 +6,20 @@ type R = Record<any, any>
 
 let vue: VueConstructor
 
+function getDescriptors (model: R) {
+  const prototype = Object.getPrototypeOf(model)
+  if (prototype === null || prototype === Object.prototype) {
+    return {}
+  }
+  const prototypeDescriptors = getDescriptors(prototype)
+  const descriptors = Object.getOwnPropertyDescriptors(prototype)
+  return { ...prototypeDescriptors, ...descriptors }
+}
+
 export function makeOptions(model: R): ComponentOptions<any> {
   // prototype
   const prototype = Object.getPrototypeOf(model)
-  if (!prototype || prototype === Object.prototype) {
-    return {}
-  }
-
-  // parent options
-  const extendsOptions = makeOptions(prototype)
-
-  // descriptors
-  const descriptors = Object.getOwnPropertyDescriptors(prototype)
+  const descriptors = getDescriptors(prototype)
 
   // options
   const name = prototype.constructor.name
@@ -59,7 +61,6 @@ export function makeOptions(model: R): ComponentOptions<any> {
   // return
   return {
     name,
-    extends: extendsOptions,
     computed,
     methods,
     watch,

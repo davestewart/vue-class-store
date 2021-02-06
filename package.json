@@ -5,7 +5,7 @@
   "author": "Dave Stewart",
   "license": "MIT",
   "main": "dist/vue-class-store.js",
-  "module": "dist/vue-class-store.esm.ts",
+  "module": "dist/vue-class-store.esm.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist/*",

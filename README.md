@@ -134,9 +134,9 @@ const store: Store = VueStore.create({someData: 10, otherData: 20, 'on:someData'
 
 This is probably a good point to stop and explain what is happening under the hood. 
 
-First we do some prep work. When and how exactly this happens depends on whether you use `@VueStore` or 
-`VueStore.create`, but whatever the method, the entire contents of `Vue.prototype` is merged into your prototype. This 
-makes your instances "look" just like `Vue`. 
+First we do some prep work. When and how exactly this happens depends on whether you use `@VueStore` or
+`VueStore.create`, but whatever the method, the entire contents of `Vue.prototype` is merged into your prototype. This
+makes your instances "look" just like `Vue`.
 
 Your constructor is then called, returning your new object. `VueStore` intercepts the object, rips out all the data,
 then turns around and tells Vue to initialize this (now empty) object as a Vue instance, passing it your data. Vue then
@@ -144,8 +144,8 @@ happily puts that data right back where it came from, but with added reactivity.
 
 ### `@VueStore`
 `@VueStore` is able to frontload both the injection of `Vue.prototype` and collecting your prototype's methods to form
-the basis of the options object sent to vue. It also does a couple `class`-specific things. It copies the static methods 
-and properties from the base class into itself, ensuring that statics continue to work, and sets its `prototype` to the 
+the basis of the options object sent to vue. It also does a couple `class`-specific things. It copies the static methods
+and properties from the base class into itself, ensuring that statics continue to work, and sets its `prototype` to the
 wrapped class's `prototype`, meaning `obj instanceof Store` still works.
 
 ### `VueStore.create`
@@ -181,7 +181,7 @@ class Square extends Rectangle {
 }
 ```
 
-Make sure you **don't inherit from another decorated class**. Initializing a vue instance adds tons of data to the 
+Make sure you **don't inherit from another decorated class**. Initializing a vue instance adds tons of data to the
 object, which will then wind up being fed into the next vue initializer, which will gum things up horribly.
 
 ```typescript

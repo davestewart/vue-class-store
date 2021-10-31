@@ -11,11 +11,11 @@ type C = {new(...args: any[]): {}}
 type R = Record<any, any>
 
 function copyStatics(source: R, destination: R) {
-  for (let name of Object.getOwnPropertyNames(source)) {
-    if (name !== 'length' && name !== 'name' && name !== 'prototype') {
-      destination[name] = source[name]
-    }
-  }
+  let descriptors = Object.getOwnPropertyDescriptors(source)
+  delete descriptors['length']
+  delete descriptors['name']
+  delete descriptors['prototype']
+  Object.defineProperties(destination, descriptors)
 }
 
 function injectVue(prototype: R) {

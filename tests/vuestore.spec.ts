@@ -163,6 +163,14 @@ describe("@VueStore", () => {
     Store.bump()
     expect(Store.prop).to.equal(20)
   });
+
+  it("instanceof should be preserved", () => {
+    @VueStore
+    class Store {}
+
+    let store = new Store()
+    expect(store).to.be.instanceof(Store)
+  });
 });
 
 describe("VueStore.create", () => {

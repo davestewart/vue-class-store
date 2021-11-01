@@ -1,4 +1,4 @@
-import chai, {expect} from 'chai';
+import chai, {assert, expect} from 'chai';
 import spies from 'chai-spies';
 import VueStore from '../src';
 import Vue from "vue";
@@ -171,6 +171,34 @@ describe("@VueStore", () => {
     let store = new Store()
     expect(store).to.be.instanceof(Store)
   });
+
+  it("should not hold references", function(done) {
+    this.timeout(5000)
+
+    @VueStore
+    class Store {
+      constructor(public prop: number) {}
+    }
+
+    let blackhole: (Store | null)[] = [null, null]
+    let baseline = process.memoryUsage().heapUsed
+    let didCollect = false // whether a net-negative GC pass was executed
+    for (let i = 0; i < 20; i++) {
+      let start = process.memoryUsage().heapUsed
+      for(let j = 0; j < 10000; j++) {
+        blackhole[j % 2] = new Store(j)
+      }
+      let end = process.memoryUsage().heapUsed
+      if(end < start) {
+        didCollect = true
+        break
+      }
+    }
+    if(!didCollect) {
+      assert.fail('a net-negative GC pass should run when creating 200,000 stores')
+    }
+    done()
+  })
 });
 
 describe("VueStore.create", () => {

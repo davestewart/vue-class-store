@@ -8,6 +8,35 @@ chai.use(spies)
 type C = { new(...args: any[]): {} }
 
 function testStores(storeFunction: <T extends C>(constructor: T) => T) {
+  it("`this` should be preserved when extending VueStore", () => {
+    let constructedInstance: Store | null = null
+
+    @storeFunction
+    class Store extends VueStore {
+      constructor() {
+        super()
+        constructedInstance = this
+      }
+    }
+
+    let store = new Store()
+    expect(constructedInstance).to.equal(store)
+  });
+
+  it("`this` should not be preserved when not extending VueStore", () => {
+    let constructedInstance: Store | null = null
+
+    @storeFunction
+    class Store {
+      constructor() {
+        constructedInstance = this
+      }
+    }
+
+    let store = new Store()
+    expect(constructedInstance).to.not.equal(store)
+  });
+
   it("properties should be preserved", () => {
     @storeFunction
     class Store {
@@ -200,6 +229,14 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T) {
 
 describe("@VueStore", () => {
   testStores(VueStore)
+
+  it("a store extending VueStore should be instanceof VueStore and itself", () => {
+    class Store extends VueStore {}
+
+    let store = new Store()
+    expect(store).to.be.instanceof(VueStore)
+    expect(store).to.be.instanceof(Store)
+  });
 });
 
 describe("VueStore.create", () => {

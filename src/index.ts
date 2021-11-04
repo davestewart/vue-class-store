@@ -78,17 +78,30 @@ function addWatches (state) {
 }
 
 export function makeReactive<T extends object>(model: T): T {
+  // if the model is reactive (such as an object extending VueStore) this will return the model
   const state = reactive(model)
   addWatches(state)
   return state as T
 }
 
-export default function VueStore<T extends C> (constructor: T): T {
-  function construct (...args: any[]) {
-    const instance = new (constructor as C)(...args)
-    return makeReactive(instance)
-  }
-  return (construct as unknown) as T
+export interface VueStore {
+  new (): VueStore
+  <T extends C> (constructor: T): T
+  create<T extends object> (model: T): T
 }
 
+const VueStore: VueStore = function VueStore (this: object, constructor?: C): any {
+  if(constructor === undefined) { // called as a constructor
+    return reactive(this)
+  } else { // called as a decorator
+    function construct(...args: any[]) {
+      const instance = new constructor!(...args)
+      // if(instance instanceof VueStore)
+      return makeReactive(instance)
+    }
+    return construct
+  }
+} as VueStore
 VueStore.create = makeReactive
+
+export default VueStore

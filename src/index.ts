@@ -94,12 +94,20 @@ const VueStore: VueStore = function VueStore (this: object, constructor?: C): an
   if(constructor === undefined) { // called as a constructor
     return reactive(this)
   } else { // called as a decorator
-    function construct(...args: any[]) {
-      const instance = new constructor!(...args)
-      // if(instance instanceof VueStore)
-      return makeReactive(instance)
-    }
-    return construct
+    let wrapper = {
+      // preserve the constructor name. Useful for instanceof checks. https://stackoverflow.com/a/9479081
+      // the `]: function(` instead of `](` here is necessary, otherwise the function is declared using the es6 class
+      // syntax and thus can't be called as a constructor. https://stackoverflow.com/a/40922715
+      [constructor.name]: function(...args) {
+        return makeReactive(new constructor!(...args))
+      }
+    }[constructor.name]
+    // set the wrapper's `prototype` property to the wrapped class's prototype. This makes instanceof work.
+    wrapper.prototype = constructor.prototype
+    // set the prototype to the constructor instance so you can still access static methods/properties.
+    // This is how JS implements inheriting statics from superclasses, so it seems like a good solution.
+    Object.setPrototypeOf(wrapper, constructor)
+    return wrapper
   }
 } as VueStore
 VueStore.create = makeReactive

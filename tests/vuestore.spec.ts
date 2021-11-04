@@ -237,6 +237,35 @@ describe("@VueStore", () => {
     expect(store).to.be.instanceof(VueStore)
     expect(store).to.be.instanceof(Store)
   });
+
+  it("constructor name should match", () => {
+    @VueStore
+    class Store {}
+
+    expect(Store.name).to.equal("Store")
+  });
+
+  it("statics should work", () => {
+    @VueStore
+    class Store {
+      static prop = 10
+      static bump() {
+        this.prop += 10
+      }
+    }
+
+    expect(Store.prop).to.equal(10)
+    Store.bump()
+    expect(Store.prop).to.equal(20)
+  });
+
+  it("instanceof should be preserved", () => {
+    @VueStore
+    class Store {}
+
+    let store = new Store()
+    expect(store).to.be.instanceof(Store)
+  });
 });
 
 describe("VueStore.create", () => {

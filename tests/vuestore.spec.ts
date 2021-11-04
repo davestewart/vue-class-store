@@ -109,36 +109,63 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T) {
   it("watches should trigger", async () => {
     @storeFunction
     class Store {
-      plain = 10
+      value = 10
+      deepValue = {value: 20}
       stringData = 'old'
+      syncValue = 30
 
-      constructor(
-          private __spies: { plainSpy(...args), stringSpy(...args) }
-      ) {
-      }
-
-      stringChanged(...args) {
-        this.__spies.stringSpy(...args)
+      constructor(private spies: {
+        plainSpy(...args),
+        stringSpy(...args),
+        deepSpy(...args),
+        immediateSpy(...args),
+        syncSpy(...args),
+      }) {
       }
 
       'on:stringData' = 'stringChanged'
+      stringChanged(...args) {
+        this.spies.stringSpy(...args)
+      }
 
-      'on:plain'(...args) {
-        this.__spies.plainSpy(...args)
+      'on:value'(...args) {
+        this.spies.plainSpy(...args)
+      }
+      'on:deepValue#deep'(...args) {
+        this.spies.deepSpy(...args)
+      }
+      'on:value#immediate'(...args) {
+        this.spies.immediateSpy(...args)
+      }
+      'on:syncValue#sync'(...args) {
+        this.spies.syncSpy(...args)
       }
     }
 
     let plainSpy = chai.spy()
     let stringSpy = chai.spy()
-    let store = new Store({plainSpy, stringSpy})
+    let deepSpy = chai.spy()
+    let immediateSpy = chai.spy()
+    let syncSpy = chai.spy()
+    let store = new Store({plainSpy, stringSpy, deepSpy, immediateSpy, syncSpy})
 
-    store.plain = 100
+    store.value = 100
+    store.deepValue.value = 200
     store.stringData = 'new'
+
+    expect(immediateSpy).to.be.called.with(10)
 
     await nextTick()
 
     expect(plainSpy).to.be.called.with(100, 10)
     expect(stringSpy).to.be.called.with('new', 'old')
+    expect(deepSpy).to.be.called.with(store.deepValue, store.deepValue)
+    expect(immediateSpy).to.be.called.with(100, 10)
+
+    store.syncValue = 300
+    expect(syncSpy).to.be.called.with(300, 30)
+    store.syncValue = 3000
+    expect(syncSpy).to.be.called.with(3000, 300)
   });
 
   it("should not hold references", function(done) {

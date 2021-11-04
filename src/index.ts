@@ -24,6 +24,24 @@ function getValue (value: Record<any, any>, path: string | string[]) {
     : value
 }
 
+type Flush = 'pre' | 'post' | 'sync'
+
+// 'on:target', 'on:target#flag', 'on:target#flag1,flag2'
+// flags: deep, immediate, pre, post, sync
+let watchPattern = /^on:(.*?)(?:#([a-z,]+))?$/
+
+function parseWatch(name: String): {target: string, deep: boolean, immediate: boolean, flush?: Flush} {
+  let match = name.match(watchPattern)!
+  let target = match[1]
+  let flags = (match[2] ?? '').split(',')
+  return {
+    target: target,
+    deep: flags.indexOf('deep') != -1,
+    immediate: flags.indexOf('immediate') != -1,
+    flush: flags.find((flag) => flag == 'pre' || flag == 'post' || flag == 'sync') as Flush | undefined
+  }
+}
+
 /**
  * Scans the model for `on:*` watchers and then creates watches for them. This method expects to be passed a reactive
  * model.
@@ -37,23 +55,24 @@ function addWatches (state) {
   // string watches
   Object.keys(state).forEach((key: string) => {
     if (key.startsWith('on:')) {
-      watched[key.substring(3)] = state[key]
+      watched[key] = state[key]
     }
   })
   // method watches
   Object.keys(descriptors).forEach((key: string) => {
     if(key.startsWith('on:')) {
-      watched[key.substring(3)] = descriptors[key].value
+      watched[key] = descriptors[key].value
     }
   })
 
   // set up watches
   Object.keys(watched).forEach(key => {
     const callback: Function = typeof watched[key] === 'string'
-      ? state[getValue(state, 'on:' + key)]
+      ? state[getValue(state, key)]
       : watched[key]
     if (typeof callback === 'function') {
-      watch(() => getValue(state, key), callback.bind(state))
+      let {target, deep, immediate, flush} = parseWatch(key)
+      watch(() => getValue(state, target), callback.bind(state), {deep, immediate, flush})
     }
   })
 }

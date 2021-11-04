@@ -4,7 +4,7 @@ type C = { new (...args: any[]): {} }
 
 type R = Record<any, any>
 
-function getPrototypeDescriptors (model: R) {
+function getPrototypeDescriptors (model: R): { [x: string]: PropertyDescriptor } {
   const prototype = Object.getPrototypeOf(model)
   if (prototype === null || prototype === Object.prototype) {
     return {}
@@ -43,7 +43,7 @@ function addWatches (state) {
   // method watches
   Object.keys(descriptors).forEach((key: string) => {
     if(key.startsWith('on:')) {
-      watched[key.substring(3)] = state[key]
+      watched[key.substring(3)] = descriptors[key].value
     }
   })
 

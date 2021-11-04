@@ -98,9 +98,6 @@ function extractData(instance: R): {data: object, watch: object} {
   // We _remove_ the data, then give it to vue, which puts it back.
   Object.keys(instance).forEach((key) => {
     const value = instance[key]
-    if (key.startsWith('__')) {
-      return
-    }
     if (key.startsWith('on:')) {
       let {name, watcher} = createWatcher(key, value)
       watch[name] = watcher

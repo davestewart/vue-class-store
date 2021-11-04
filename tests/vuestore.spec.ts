@@ -59,7 +59,6 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T) {
     class Store {
       plain = 10
       declared: number
-      __private = -1
 
       constructor() {
         this.declared = 20
@@ -77,18 +76,15 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T) {
     let declaredSpy = chai.spy()
     let notDeclaredSpy = chai.spy()
     let lateSpy = chai.spy()
-    let privateSpy = chai.spy()
     store.$watch('plain', plainSpy)
     store.$watch('declared', declaredSpy)
     store.$watch('notDeclared', notDeclaredSpy)
     store.$watch('late', lateSpy)
-    store.$watch('__private', privateSpy)
 
     store.plain = 100
     store.declared = 200
     store['notDeclared'] = 300
     store['late'] = 400
-    store.__private = -10
 
     await store.$nextTick()
 
@@ -96,7 +92,6 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T) {
     expect(declaredSpy).to.be.called.with(200, 20)
     expect(notDeclaredSpy).to.be.called.with(300, 30)
     expect(lateSpy).to.not.be.called()
-    expect(privateSpy).to.not.be.called()
   });
 
   it("watches should trigger", async () => {
@@ -107,20 +102,20 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T) {
       immediate = 30
 
       constructor(
-          private __spies: { plainSpy(...args), deepSpy(...args), immediateSpy(...args) }
+          private spies: { plainSpy(...args), deepSpy(...args), immediateSpy(...args) }
       ) {
       }
 
       'on:plain'(...args) {
-        this.__spies.plainSpy(...args)
+        this.spies.plainSpy(...args)
       }
 
       'on:deep#deep'(...args) {
-        this.__spies.deepSpy(...args)
+        this.spies.deepSpy(...args)
       }
 
       'on:immediate#immediate'(...args) {
-        this.__spies.immediateSpy(...args)
+        this.spies.immediateSpy(...args)
       }
     }
 

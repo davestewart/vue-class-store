@@ -1,17 +1,17 @@
-import { computed, reactive, watch } from 'vue'
+import {reactive, watch} from 'vue'
 
 type C = { new (...args: any[]): {} }
 
 type R = Record<any, any>
 
-function getDescriptors (model: R) {
+function getPrototypeDescriptors (model: R) {
   const prototype = Object.getPrototypeOf(model)
   if (prototype === null || prototype === Object.prototype) {
     return {}
   }
-  const prototypeDescriptors = getDescriptors(prototype)
+  const parentDescriptors = getPrototypeDescriptors(prototype)
   const descriptors = Object.getOwnPropertyDescriptors(prototype)
-  return { ...prototypeDescriptors, ...descriptors }
+  return { ...parentDescriptors, ...descriptors }
 }
 
 function getValue (value: Record<any, any>, path: string | string[]) {
@@ -24,39 +24,44 @@ function getValue (value: Record<any, any>, path: string | string[]) {
     : value
 }
 
-export function makeReactive (model) {
-  // properties
-  const descriptors = getDescriptors(model)
+/**
+ * Scans the model for `on:*` watchers and then creates watches for them. This method expects to be passed a reactive
+ * model.
+ */
+function addWatches (state) {
+  const descriptors = getPrototypeDescriptors(state)
 
   // options
   const watched = {}
 
-  // data, string watches
-  Object.keys(model).forEach((key: string) => {
+  // string watches
+  Object.keys(state).forEach((key: string) => {
     if (key.startsWith('on:')) {
-      watched[key.substring(3)] = model[key]
+      watched[key.substring(3)] = state[key]
     }
   })
+  // method watches
   Object.keys(descriptors).forEach((key: string) => {
     if(key.startsWith('on:')) {
-      watched[key.substring(3)] = model[key]
+      watched[key.substring(3)] = state[key]
     }
   })
-
-  const state = reactive(model)
 
   // set up watches
   Object.keys(watched).forEach(key => {
     const callback: Function = typeof watched[key] === 'string'
-      ? model[getValue(model, 'on:' + key)]
+      ? state[getValue(state, 'on:' + key)]
       : watched[key]
     if (typeof callback === 'function') {
       watch(() => getValue(state, key), callback.bind(state))
     }
   })
+}
 
-  // return
-  return state
+export function makeReactive<T extends object>(model: T): T {
+  const state = reactive(model)
+  addWatches(state)
+  return state as T
 }
 
 export default function VueStore<T extends C> (constructor: T): T {

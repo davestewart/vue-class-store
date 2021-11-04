@@ -62,6 +62,50 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T) {
     expect(lateSpy).to.be.called.with(400, 40)
   });
 
+  it("getters should be reactive", async () => {
+    @storeFunction
+    class Store {
+      value = 10
+
+      get plusTen() {
+        return this.value + 10
+      }
+    }
+
+    let store = new Store()
+
+    let plusTenSpy = chai.spy()
+    watch(() => store.plusTen, plusTenSpy)
+
+    store.value = 100
+
+    await nextTick()
+
+    expect(plusTenSpy).to.be.called.with(110, 20)
+  });
+
+  it("methods should work", async () => {
+    @storeFunction
+    class Store {
+      plain = 10
+
+      changePlain() {
+        this.plain = 100
+      }
+    }
+
+    let store = new Store()
+
+    let plainSpy = chai.spy()
+    watch(() => store.plain, plainSpy)
+
+    store.changePlain()
+
+    await nextTick()
+
+    expect(plainSpy).to.be.called.with(100, 10)
+  });
+
   it("watches should trigger", async () => {
     @storeFunction
     class Store {

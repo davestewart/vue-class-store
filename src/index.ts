@@ -29,48 +29,21 @@ export function makeReactive (model) {
   const descriptors = getDescriptors(model)
 
   // options
-  const data = {}
   const watched = {}
 
   // data, string watches
   Object.keys(model).forEach((key: string) => {
-    const value = model[key]
     if (key.startsWith('on:')) {
-      watched[key.substring(3)] = value
+      watched[key.substring(3)] = model[key]
     }
-    else {
-      data[key] = value
+  })
+  Object.keys(descriptors).forEach((key: string) => {
+    if(key.startsWith('on:')) {
+      watched[key.substring(3)] = model[key]
     }
   })
 
-  // function watches, methods, computed
-  const state = reactive({
-    ...data,
-    ...Object.keys(descriptors).reduce((output, key) => {
-      if (key !== 'constructor' && !key.startsWith('__')) {
-        const { value, get, set } = descriptors[key]
-        // watch
-        if (key.startsWith('on:')) {
-          watched[key.substring(3)] = value
-        }
-        // method
-        else if (value) {
-          output[key] = (...args) => value.call(state, ...args)
-        }
-        // computed
-        else if (get && set) {
-          output[key] = computed({
-            set: (value) => set.call(state, value),
-            get: () => get.call(state),
-          })
-        }
-        else if (get) {
-          output[key] = computed(() => get.call(state))
-        }
-      }
-      return output
-    }, {}),
-  })
+  const state = reactive(model)
 
   // set up watches
   Object.keys(watched).forEach(key => {

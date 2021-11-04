@@ -94,17 +94,69 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T) {
     expect(lateSpy).to.not.be.called()
   });
 
+  it("getters should be reactive", async () => {
+    @storeFunction
+    class Store {
+      value = 10
+
+      get plusTen() {
+        return this.value + 10
+      }
+    }
+    interface Store extends Vue {}
+
+    let store = new Store()
+
+    let plusTenSpy = chai.spy()
+    store.$watch('plusTen', plusTenSpy)
+
+    store.value = 100
+
+    await store.$nextTick()
+
+    expect(plusTenSpy).to.be.called.with(110, 20)
+  });
+
+  it("methods should work", async () => {
+    @storeFunction
+    class Store {
+      plain = 10
+
+      changePlain() {
+        this.plain = 100
+      }
+    }
+    interface Store extends Vue {}
+
+    let store = new Store()
+
+    let plainSpy = chai.spy()
+    store.$watch('plain', plainSpy)
+
+    store.changePlain()
+
+    await store.$nextTick()
+
+    expect(plainSpy).to.be.called.with(100, 10)
+  });
+
   it("watches should trigger", async () => {
     @storeFunction
     class Store {
       plain = 10
       deep = {value: 20}
+      stringData = 'old'
       immediate = 30
 
       constructor(
-          private spies: { plainSpy(...args), deepSpy(...args), immediateSpy(...args) }
+          private spies: { plainSpy(...args), deepSpy(...args), immediateSpy(...args), stringSpy(...args) }
       ) {
       }
+
+      stringChanged(...args) {
+        this.spies.stringSpy(...args)
+      }
+      'on:stringData' = 'stringChanged'
 
       'on:plain'(...args) {
         this.spies.plainSpy(...args)
@@ -125,11 +177,13 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T) {
     let plainSpy = chai.spy()
     let deepSpy = chai.spy()
     let immediateSpy = chai.spy()
-    let store = new Store({plainSpy, deepSpy, immediateSpy})
+    let stringSpy = chai.spy()
+    let store = new Store({plainSpy, deepSpy, immediateSpy, stringSpy})
 
     store.plain = 100
     store.deep.value = 200
     store.immediate = 300
+    store.stringData = 'new'
 
     expect(immediateSpy).to.be.called.with(30)
 
@@ -138,33 +192,7 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T) {
     expect(plainSpy).to.be.called.with(100, 10)
     expect(deepSpy).to.be.called.with({value: 200}, {value: 200})
     expect(immediateSpy).to.be.called.with(300, 30)
-  });
-}
-
-
-describe("@VueStore", () => {
-  testStores(VueStore)
-
-  it("statics should work", () => {
-    @VueStore
-    class Store {
-      static prop = 10
-      static bump() {
-        this.prop += 10
-      }
-    }
-
-    expect(Store.prop).to.equal(10)
-    Store.bump()
-    expect(Store.prop).to.equal(20)
-  });
-
-  it("instanceof should be preserved", () => {
-    @VueStore
-    class Store {}
-
-    let store = new Store()
-    expect(store).to.be.instanceof(Store)
+    expect(stringSpy).to.be.called.with('new', 'old')
   });
 
   it("should not hold references", function(done) {
@@ -194,6 +222,33 @@ describe("@VueStore", () => {
     }
     done()
   })
+}
+
+
+describe("@VueStore", () => {
+  testStores(VueStore)
+
+  it("statics should work", () => {
+    @VueStore
+    class Store {
+      static prop = 10
+      static bump() {
+        this.prop += 10
+      }
+    }
+
+    expect(Store.prop).to.equal(10)
+    Store.bump()
+    expect(Store.prop).to.equal(20)
+  });
+
+  it("instanceof should be preserved", () => {
+    @VueStore
+    class Store {}
+
+    let store = new Store()
+    expect(store).to.be.instanceof(Store)
+  });
 });
 
 describe("VueStore.create", () => {

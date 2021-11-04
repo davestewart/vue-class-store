@@ -110,11 +110,18 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T) {
     @storeFunction
     class Store {
       plain = 10
+      stringData = 'old'
 
       constructor(
-          private __spies: { plainSpy(...args) }
+          private __spies: { plainSpy(...args), stringSpy(...args) }
       ) {
       }
+
+      stringChanged(...args) {
+        this.__spies.stringSpy(...args)
+      }
+
+      'on:stringData' = 'stringChanged'
 
       'on:plain'(...args) {
         this.__spies.plainSpy(...args)
@@ -122,13 +129,16 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T) {
     }
 
     let plainSpy = chai.spy()
-    let store = new Store({plainSpy})
+    let stringSpy = chai.spy()
+    let store = new Store({plainSpy, stringSpy})
 
     store.plain = 100
+    store.stringData = 'new'
 
     await nextTick()
 
     expect(plainSpy).to.be.called.with(100, 10)
+    expect(stringSpy).to.be.called.with('new', 'old')
   });
 
   it("should not hold references", function(done) {

@@ -10,14 +10,6 @@ type C = {new(...args: any[]): {}}
 
 type R = Record<any, any>
 
-function copyStatics(source: R, destination: R) {
-  let descriptors = Object.getOwnPropertyDescriptors(source)
-  delete descriptors['length']
-  delete descriptors['name']
-  delete descriptors['prototype']
-  Object.defineProperties(destination, descriptors)
-}
-
 function injectVue(prototype: R) {
   let descriptors = Object.getOwnPropertyDescriptors(Vue.prototype)
   delete descriptors['constructor']
@@ -135,15 +127,23 @@ export default function VueStore<T extends C>(constructor: T): T {
   const classOptions = collectClassOptions(constructor.prototype);
   injectVue(constructor.prototype)
 
-  let wrapper = function(...args: any[]) {
-    const instance = new (constructor as C)(...args);
-    const data = extractData(instance);
-    (instance as any)._init(mergeData(classOptions, data));
-    return (instance);
-  }
+  let wrapper = {
+    // preserve the constructor name. https://stackoverflow.com/a/9479081
+    // the `]: function(` instead of `](` here is necessary, otherwise the function is declared using the es6 class
+    // syntax and thus can't be called as a constructor. https://stackoverflow.com/a/40922715
+    [constructor.name]: function(...args) {
+      const instance = new (constructor as C)(...args);
+      const data = extractData(instance);
+      (instance as any)._init(mergeData(classOptions, data));
+      return instance;
+    }
+  }[constructor.name]
+  // set the wrapper's `prototype` property to the wrapped class's prototype. This makes instanceof work.
+  wrapper.prototype = constructor.prototype
+  // set the prototype to the constructor instance so you can still access static methods/properties.
+  // This is how JS implements inheriting statics from superclasses, so it seems like a good solution.
+  Object.setPrototypeOf(wrapper, constructor)
 
-  copyStatics(constructor, wrapper); // make static functions/properties work
-  wrapper.prototype = constructor.prototype; // makes instanceof work
   return wrapper as unknown as T;
 }
 

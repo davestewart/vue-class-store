@@ -147,10 +147,22 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T) {
       deep = {value: 20}
       stringData = 'old'
       immediate = 30
+      nesting = {value: 40}
+      replace: object = {value: 50}
+      replaceWithMissing: object = {value: 10}
+      replaceFromMissing: object = {}
 
-      constructor(
-          private spies: { plainSpy(...args), deepSpy(...args), immediateSpy(...args), stringSpy(...args) }
-      ) {
+      constructor(public spies: {
+        plainSpy(...args),
+        deepSpy(...args),
+        immediateSpy(...args),
+        stringSpy(...args),
+        nestingSpy(...args),
+        replaceSpy(...args),
+        nestedReplaceSpy(...args),
+        nestedReplaceWithMissingSpy(...args),
+        nestedReplaceFromMissingSpy(...args),
+      }) {
       }
 
       stringChanged(...args) {
@@ -169,30 +181,69 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T) {
       'on.immediate:immediate'(...args) {
         this.spies.immediateSpy(...args)
       }
+
+      'on:nesting.value'(...args) {
+        this.spies.nestingSpy(...args)
+      }
+
+      'on:replace'(...args) {
+        this.spies.replaceSpy(...args)
+      }
+
+      'on:replace.value'(...args) {
+        this.spies.nestedReplaceSpy(...args)
+      }
+
+      'on:replaceWithMissing.value'(...args) {
+        this.spies.nestedReplaceWithMissingSpy(...args)
+      }
+
+      'on:replaceFromMissing.value'(...args) {
+        this.spies.nestedReplaceFromMissingSpy(...args)
+      }
     }
 
     interface Store extends Vue {
     }
 
-    let plainSpy = chai.spy()
-    let deepSpy = chai.spy()
-    let immediateSpy = chai.spy()
-    let stringSpy = chai.spy()
-    let store = new Store({plainSpy, deepSpy, immediateSpy, stringSpy})
+    let store = new Store({
+      plainSpy: chai.spy(),
+      deepSpy: chai.spy(),
+      immediateSpy: chai.spy(),
+      stringSpy: chai.spy(),
+      nestingSpy: chai.spy(),
+      replaceSpy: chai.spy(),
+      nestedReplaceSpy: chai.spy(),
+      nestedReplaceWithMissingSpy: chai.spy(),
+      nestedReplaceFromMissingSpy: chai.spy(),
+    })
+    let spies = store.spies
+
+    expect(spies.immediateSpy).to.be.called.with(30)
 
     store.plain = 100
     store.deep.value = 200
     store.immediate = 300
     store.stringData = 'new'
+    store.nesting.value = 400
+    let original = store.replace
+    let replacement = {value: 500}
+    store.replace = replacement
+    store.replaceWithMissing = {}
+    store.replaceFromMissing = {value: 10}
 
-    expect(immediateSpy).to.be.called.with(30)
 
     await store.$nextTick()
 
-    expect(plainSpy).to.be.called.with(100, 10)
-    expect(deepSpy).to.be.called.with({value: 200}, {value: 200})
-    expect(immediateSpy).to.be.called.with(300, 30)
-    expect(stringSpy).to.be.called.with('new', 'old')
+    expect(spies.plainSpy).to.be.called.with(100, 10)
+    expect(spies.deepSpy).to.be.called.with({value: 200}, {value: 200})
+    expect(spies.immediateSpy).to.be.called.with(300, 30)
+    expect(spies.stringSpy).to.be.called.with('new', 'old')
+    expect(spies.nestingSpy).to.be.called.with(400, 40)
+    expect(spies.replaceSpy).to.be.called.with(replacement, original)
+    expect(spies.nestedReplaceSpy).to.be.called.with(500, 50)
+    expect(spies.nestedReplaceWithMissingSpy).to.be.called.with(undefined, 10)
+    expect(spies.nestedReplaceFromMissingSpy).to.be.called.with(10, undefined)
   });
 
   it("should not hold references", function(done) {

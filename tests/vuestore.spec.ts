@@ -134,67 +134,118 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T) {
 
     expect(plainSpy).to.be.called.with(100, 10)
   });
-
   it("watches should trigger", async () => {
     @storeFunction
     class Store {
-      value = 10
-      deepValue = {value: 20}
+      plain = 10
+      deep = {value: 20}
       stringData = 'old'
+      immediate = 30
+      nesting = {value: 40}
+      replace: object = {value: 50}
       syncValue = 30
+      replaceWithMissing: object = {value: 10}
+      replaceFromMissing: object = {}
 
-      constructor(private spies: {
+      constructor(public spies: {
         plainSpy(...args),
-        stringSpy(...args),
         deepSpy(...args),
         immediateSpy(...args),
         syncSpy(...args),
+        stringSpy(...args),
+        nestingSpy(...args),
+        replaceSpy(...args),
+        nestedReplaceSpy(...args),
+        nestedReplaceWithMissingSpy(...args),
+        nestedReplaceFromMissingSpy(...args),
       }) {
       }
 
-      'on:stringData' = 'stringChanged'
       stringChanged(...args) {
         this.spies.stringSpy(...args)
       }
+      'on:stringData' = 'stringChanged'
 
-      'on:value'(...args) {
+      'on:plain'(...args) {
         this.spies.plainSpy(...args)
       }
-      'on.deep:deepValue'(...args) {
+
+      'on.deep:deep'(...args) {
         this.spies.deepSpy(...args)
       }
-      'on.immediate:value'(...args) {
+
+      'on.immediate:immediate'(...args) {
         this.spies.immediateSpy(...args)
       }
+
       'on.sync:syncValue'(...args) {
         this.spies.syncSpy(...args)
       }
+
+      'on:nesting.value'(...args) {
+        this.spies.nestingSpy(...args)
+      }
+
+      'on:replace'(...args) {
+        this.spies.replaceSpy(...args)
+      }
+
+      'on:replace.value'(...args) {
+        this.spies.nestedReplaceSpy(...args)
+      }
+
+      'on:replaceWithMissing.value'(...args) {
+        this.spies.nestedReplaceWithMissingSpy(...args)
+      }
+
+      'on:replaceFromMissing.value'(...args) {
+        this.spies.nestedReplaceFromMissingSpy(...args)
+      }
     }
 
-    let plainSpy = chai.spy()
-    let stringSpy = chai.spy()
-    let deepSpy = chai.spy()
-    let immediateSpy = chai.spy()
-    let syncSpy = chai.spy()
-    let store = new Store({plainSpy, stringSpy, deepSpy, immediateSpy, syncSpy})
+    let store = new Store({
+      plainSpy: chai.spy(),
+      deepSpy: chai.spy(),
+      immediateSpy: chai.spy(),
+      stringSpy: chai.spy(),
+      nestingSpy: chai.spy(),
+      replaceSpy: chai.spy(),
+      nestedReplaceSpy: chai.spy(),
+      syncSpy: chai.spy(),
+      nestedReplaceWithMissingSpy: chai.spy(),
+      nestedReplaceFromMissingSpy: chai.spy(),
+    })
+    let spies = store.spies
 
-    store.value = 100
-    store.deepValue.value = 200
+    expect(spies.immediateSpy).to.be.called.with(30)
+
+    store.plain = 100
+    store.deep.value = 200
+    store.immediate = 300
     store.stringData = 'new'
-
-    expect(immediateSpy).to.be.called.with(10)
+    store.nesting.value = 400
+    let original = store.replace
+    let replacement = {value: 500}
+    store.replace = replacement
+    store.replaceWithMissing = {}
+    store.replaceFromMissing = {value: 10}
 
     await nextTick()
 
-    expect(plainSpy).to.be.called.with(100, 10)
-    expect(stringSpy).to.be.called.with('new', 'old')
-    expect(deepSpy).to.be.called.with(store.deepValue, store.deepValue)
-    expect(immediateSpy).to.be.called.with(100, 10)
+    expect(spies.plainSpy).to.be.called.with(100, 10)
+    expect(spies.deepSpy).to.be.called.with({value: 200}, {value: 200})
+    expect(spies.immediateSpy).to.be.called.with(300, 30)
+    expect(spies.stringSpy).to.be.called.with('new', 'old')
+    expect(spies.nestingSpy).to.be.called.with(400, 40)
+    expect(spies.replaceSpy).to.be.called.with(replacement, original)
+    expect(spies.nestedReplaceSpy).to.be.called.with(500, 50)
+    expect(spies.nestedReplaceWithMissingSpy).to.be.called.with(undefined, 10)
+    expect(spies.nestedReplaceFromMissingSpy).to.be.called.with(10, undefined)
 
     store.syncValue = 300
-    expect(syncSpy).to.be.called.with(300, 30)
+    expect(spies.syncSpy).to.be.called.with(300, 30)
     store.syncValue = 3000
-    expect(syncSpy).to.be.called.with(3000, 300)
+    expect(spies.syncSpy).to.be.called.with(3000, 300)
   });
 
   it("should not hold references", function(done) {

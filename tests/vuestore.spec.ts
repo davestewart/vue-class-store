@@ -160,13 +160,13 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T) {
       'on:value'(...args) {
         this.spies.plainSpy(...args)
       }
-      'on:deepValue#deep'(...args) {
+      'on.deep:deepValue'(...args) {
         this.spies.deepSpy(...args)
       }
-      'on:value#immediate'(...args) {
+      'on.immediate:value'(...args) {
         this.spies.immediateSpy(...args)
       }
-      'on:syncValue#sync'(...args) {
+      'on.sync:syncValue'(...args) {
         this.spies.syncSpy(...args)
       }
     }

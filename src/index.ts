@@ -24,21 +24,32 @@ function getValue (value: Record<any, any>, path: string | string[]) {
     : value
 }
 
-type Flush = 'pre' | 'post' | 'sync'
+type WatchInfo = {
+  callback: string | Function,
+  target: string,
+  deep: boolean,
+  immediate: boolean,
+  flush?: 'pre' | 'post' | 'sync'
+}
 
-// 'on:target', 'on:target#flag', 'on:target#flag1,flag2'
+// 'on.flag:target', 'on.flag1.flag2:target'
 // flags: deep, immediate, pre, post, sync
-let watchPattern = /^on:(.*?)(?:#([a-z,]+))?$/
+let watchPattern = /^on(\.[.a-zA-Z]*)?:(.*)$/
 
-function parseWatch(name: String): {target: string, deep: boolean, immediate: boolean, flush?: Flush} {
-  let match = name.match(watchPattern)!
-  let target = match[1]
-  let flags = (match[2] ?? '').split(',')
+function isWatch(key: string): boolean {
+  return watchPattern.test(key)
+}
+function parseWatch(key: string, callback: string | Function): WatchInfo {
+  let match = key.match(watchPattern)!
+  // the initial period will create an empty element, but all we do is check if specific values exist, so we don't care
+  let flags = new Set((match[1] ?? '').split('.'))
+  let target = match[2]
   return {
+    callback: callback,
     target: target,
-    deep: flags.indexOf('deep') != -1,
-    immediate: flags.indexOf('immediate') != -1,
-    flush: flags.find((flag) => flag == 'pre' || flag == 'post' || flag == 'sync') as Flush | undefined
+    deep: flags.has('deep'),
+    immediate: flags.has('immediate'),
+    flush: flags.has('pre') ? 'pre' : flags.has('post') ? 'post' : flags.has('sync') ? 'sync' : undefined
   }
 }
 
@@ -49,30 +60,31 @@ function parseWatch(name: String): {target: string, deep: boolean, immediate: bo
 function addWatches (state) {
   const descriptors = getPrototypeDescriptors(state)
 
-  // options
-  const watched = {}
+  // collect watches
+  const watches: WatchInfo[] = []
 
-  // string watches
-  Object.keys(state).forEach((key: string) => {
-    if (key.startsWith('on:')) {
-      watched[key] = state[key]
+  // instance watches - 'on:foo' = 'log' | 'on:foo' = function() { ... }
+  Object.keys(state).forEach(key => {
+    if (isWatch(key)) {
+      watches.push(parseWatch(key, state[key]))
     }
   })
-  // method watches
-  Object.keys(descriptors).forEach((key: string) => {
-    if(key.startsWith('on:')) {
-      watched[key] = descriptors[key].value
+  // method watches - 'on:foo'() { ... }
+  Object.keys(descriptors).forEach(key => {
+    if (isWatch(key)) {
+      watches.push(parseWatch(key, descriptors[key].value))
     }
   })
 
   // set up watches
-  Object.keys(watched).forEach(key => {
-    const callback: Function = typeof watched[key] === 'string'
-      ? state[getValue(state, key)]
-      : watched[key]
+  watches.forEach(watchInfo => {
+    const callback = typeof watchInfo.callback === 'string' ? state[watchInfo.callback] : watchInfo.callback
     if (typeof callback === 'function') {
-      let {target, deep, immediate, flush} = parseWatch(key)
-      watch(() => getValue(state, target), callback.bind(state), {deep, immediate, flush})
+      watch(() => getValue(state, watchInfo.target), callback.bind(state), {
+        deep: watchInfo.deep,
+        immediate: watchInfo.immediate,
+        flush: watchInfo.flush
+      })
     }
   })
 }

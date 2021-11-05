@@ -162,11 +162,11 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T) {
         this.spies.plainSpy(...args)
       }
 
-      'on:deep#deep'(...args) {
+      'on.deep:deep'(...args) {
         this.spies.deepSpy(...args)
       }
 
-      'on:immediate#immediate'(...args) {
+      'on.immediate:immediate'(...args) {
         this.spies.immediateSpy(...args)
       }
     }

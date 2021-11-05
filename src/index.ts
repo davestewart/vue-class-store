@@ -16,19 +16,24 @@ function injectVue(prototype: R) {
   Object.defineProperties(prototype, descriptors)
 }
 
-// 'on:target', 'on:target#immediate', 'on:target#deep', 'on:target#immediate,deep'
-let watchPattern = /^on:(.*?)(?:#(immediate|deep)(?:,(immediate|deep))?)?$/
+// 'on.flag:target', 'on.flag1.flag2:target'
+// flags: deep, immediate, pre, post, sync
+let watchPattern = /^on(\.[.a-zA-Z]*)?:(.*)$/
 
+function isWatch(key: string): boolean {
+  return watchPattern.test(key)
+}
 function createWatcher(name: String, handler: any): {name: string, watcher: any} {
   let match = name.match(watchPattern)!
-  let target = match[1]
-  let flags = [match[2], match[3]]
+  // the initial period will create an empty element, but all we do is check if specific values exist, so we don't care
+  let flags = new Set((match[1] ?? '').split('.'))
+  let target = match[2]
   return {
     name: target,
     watcher: {
       handler,
-      deep: flags.indexOf('deep') != -1,
-      immediate: flags.indexOf('immediate') != -1
+      deep: flags.has('deep'),
+      immediate: flags.has('immediate')
     }
   }
 }
@@ -53,7 +58,7 @@ function collectClassOptions(prototype: R): Partial<ComponentOptions<any>> {
   Object.keys(descriptors).forEach(key => {
     if (key !== 'constructor' && !key.startsWith('__')) {
       const {value, get, set} = descriptors[key]
-      if (key.startsWith('on:')) {
+      if (isWatch(key)) {
         let {name, watcher} = createWatcher(key, value)
         watch[name] = watcher
       } else if (get && set) {

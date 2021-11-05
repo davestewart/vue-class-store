@@ -43,7 +43,6 @@ function createWatcher(name: String, handler: any): {name: string, watcher: any}
 
 /**
  * Collects all the "static" options for the given prototype. That includes:
- * - methods
  * - watch methods (only methods. string watches like `'on:thing' = 'name'` wind up in the instance, not the prototype)
  * - computed property getters and setters
  */
@@ -57,7 +56,6 @@ function collectClassOptions(prototype: R): Partial<ComponentOptions<any>> {
 
   const name = prototype.constructor.name
   const computed: R = {}
-  const methods: R = {}
   const watch: R = {}
 
   Object.keys(descriptors).forEach(key => {
@@ -66,8 +64,6 @@ function collectClassOptions(prototype: R): Partial<ComponentOptions<any>> {
       if (key.startsWith('on:')) {
         let {name, watcher} = createWatcher(key, value)
         watch[name] = watcher
-      } else if (value) {
-        methods[key] = value
       } else if (get && set) {
         computed[key] = {get, set}
       } else if (get) {
@@ -80,7 +76,7 @@ function collectClassOptions(prototype: R): Partial<ComponentOptions<any>> {
     name,
     extends: extendsOptions,
     computed,
-    methods,
+    methods: {}, // unnecessary, they're already in the prototype
     watch,
     // data: // this will be added after we extract the data
   }

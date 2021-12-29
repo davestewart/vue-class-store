@@ -72,6 +72,7 @@ function collectClassOptions(prototype: R): Partial<ComponentOptions<any>> {
   return {
     name,
     extends: extendsOptions,
+    created: prototype.created,
     computed,
     methods: {}, // unnecessary, they're already in the prototype
     watch,

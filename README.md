@@ -47,13 +47,10 @@ export class Store {
   private value = 10
   name: string
   
-  // prefix with `__` to disable reactivity
-  private __inert = 'xenon'
-
   // construct your object like normal
   constructor(name: string) {
     this.name = 'reactive ' + name 
-    // Unlike other solutions, you *can* use `this`, because
+    // You can use `this` in the constructor, because
     // VueStore adds reactivity to the object in-place.
     setInterval(() => this.value++, 1000);
   }
@@ -63,13 +60,13 @@ export class Store {
     return this.value * 2
   }
 
-  // prefix properties with `on:` to convert to watches.
+  // prefix properties/methods with `on:` to convert to watches.
   'on:value'() {
     console.log('value changed to:', this.value)
   }
   
-  // you can add `#immediate`, `#deep`, or `#immediate,deep` (or `#deep,immediate`)
-  'on:name#immediate'() {
+  // you can add `.immediate` and/or `.deep` to set those watch flags
+  'on.immediate:name'() {
     console.log('name is now:', this.name)
   }
 
@@ -94,7 +91,8 @@ new Store() instanceof Store;
 
 // your store behaves just like a `Vue` instance, including methods like $emit.
 // however, you have to tell typescript that by creating an identically-named
-// interface which extends `Vue`. You can't use any of them in your constructor though.
+// interface which extends `Vue`. You can't use any of them in your constructor 
+// though, since your object isn't a fully-initialized Vue instance yet.
 import Vue from 'vue'
 interface Store extends Vue {}
 ```

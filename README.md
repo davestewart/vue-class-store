@@ -43,33 +43,66 @@ import VueStore from 'vue-class-store'
 
 @VueStore
 export class Store {
-  // properties are rebuilt as reactive data values
-  public value: number
+  // any properties present after constructing your object are made reactive
+  private value = 10
+  name: string
+  
+  // construct your object like normal
+  constructor(name: string) {
+    this.name = 'reactive ' + name 
+    // You can use `this` in the constructor, because
+    // VueStore adds reactivity to the object in-place.
+    setInterval(() => this.value++, 1000);
+  }
+
+  // You can't call $emit/$watch/etc. in your constructor, since your 
+  // object isn't a fully-fledged Vue object yet, so the 'created' 
+  // lifecycle hook is exposed for that purpose. Properties added here
+  // will not be reactive.
+  created() {
+    this.$watch('name', () => { console.log('the name changed') })
+  }
 
   // getters are converted to (cached) computed properties
-  public get double (): number {
+  public get double(): number {
     return this.value * 2
   }
 
-  // constructor parameters serve as props
-  constructor (value: number = 1) {
-    // constructor function serves as the created hook
-    this.value = value
-  }
-
-  // prefix properties with `on:` to convert to watches
-  'on:value' () {
+  // prefix properties/methods with `on:` to convert to watches.
+  'on:value'() {
     console.log('value changed to:', this.value)
   }
+  
+  // you can add `.immediate` and/or `.deep` to set those watch flags
+  'on.immediate:name'() {
+    console.log('name is now:', this.name)
+  }
 
-  // you can even drill into sub properties!
+  // you can drill into sub properties
   'on:some.other.value' = 'log'
 
-  // class methods are added as methods
-  log () {
+  // methods work as normal
+  log() {
     console.log('value is:', this.value)
   }
+  
+  // static properties and methods work
+  static stuff = 100
+  static doStuff() {
+    console.log('doing things #' + stuff)
+    stuff += 10
+  }
 }
+
+// instanceof works
+new Store() instanceof Store;
+
+// your store behaves just like a `Vue` instance, including methods like $emit.
+// however, you have to tell typescript that by creating an identically-named
+// interface which extends `Vue`. You can't use any of them in your constructor 
+// though, since your object isn't a fully-initialized Vue instance yet.
+import Vue from 'vue'
+interface Store extends Vue {}
 ```
 
 ### Instantiation
@@ -79,7 +112,7 @@ To use a store, simply instantiate the class.
 You can do this outside of a component, and it will be completely reactive:
 
 ```typescript
-const store = new Store({ ... })
+const store = new Store(...)
 ```
 
 Or you can instantiate within a component:
@@ -89,34 +122,42 @@ export default {
   ...
   computed: {
     model () {
-      return new Store({ ... })
+      return new Store(...)
     }
   }
 }
 ```
 
-Alternatively, you can make any non-decorated class reactive on the fly using the static `.create()` method:
+Alternatively, you can make any non-decorated object reactive on the fly using the static `.create()` method:
 
 ```typescript
 import VueStore from 'vue-class-store'
-import Store from './Store'
 
-const store: Store = VueStore.create(new Store({ ... }))
+const store: Store = VueStore.create({someData: 10, otherData: 20, 'on:someData'() {...}})
 ```
 
 ## How it works
 
-This is probably a good point to stop and explain what is happening under the hood.
+This is probably a good point to stop and explain what is happening under the hood. 
 
-Immediately after the class is instantiated, the decorator function extracts the class' properties and methods and rebuilds either a new Vue instance (Vue 2) or a Proxy object (Vue 3).
+First we do some prep work. When and how exactly this happens depends on whether you use `@VueStore` or
+`VueStore.create`, but whatever the method, the entire contents of `Vue.prototype` is merged into your prototype. This
+makes your instances "look" just like `Vue`.
 
-This functionally-identical object is then returned, and thanks to TypeScript generics your IDE and the TypeScript compiler will think it's an instance of the *original* class, so code completion will just work.
+Your constructor is then called, returning your new object. `VueStore` intercepts the object, rips out all the data,
+then turns around and tells Vue to initialize this (now empty) object as a Vue instance, passing it your data. Vue then
+happily puts that data right back where it came from, but with added reactivity.
 
-Additionally, because all methods have their scope rebound to the original class, breakpoints will stop in the right place, and you can even call the class keyword `super` and it will resolve correctly up the prototype chain.
+### `@VueStore`
+`@VueStore` is able to frontload both the injection of `Vue.prototype` and collecting your prototype's methods to form
+the basis of the options object sent to vue. It also does a couple `class`-specific things. It copies the static methods
+and properties from the base class into itself, ensuring that statics continue to work, and sets its `prototype` to the
+wrapped class's `prototype`, meaning `obj instanceof Store` still works.
 
-![devtools](docs/devtools.png)
-
-Note that the object will of course be a `Vue` or `Proxy` instance, so running code like  `store instanceof Store` will return `false` .
+### `VueStore.create`
+`VueStore.create` differs somewhat in the way it injects `Vue.prototype`. Because we don't want to modify the entire
+class of the object, we create a new "anonymous" prototype which extends the original one. We then inject vue into that
+prototype, leaving the original intact.
 
 ## Inheritance
 
@@ -146,7 +187,8 @@ class Square extends Rectangle {
 }
 ```
 
-Make sure you **don't inherit from another decorated class** because the original link to the prototype chain will have been broken by the substituted object returned by the previous decorator:
+Make sure you **don't inherit from another decorated class**. Initializing a vue instance adds tons of data to the
+object, which will then wind up being fed into the next vue initializer, which will gum things up horribly.
 
 ```typescript
 // don't do this!

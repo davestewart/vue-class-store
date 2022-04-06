@@ -178,6 +178,15 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T) {
     expect(createdSpy).to.be.called()
   });
 
+  it("non-function 'created' properties should not crash", async () => {
+    @storeFunction
+    class Store {
+      get created() { return 0 }
+    }
+
+    expect(() => new Store()).not.to.throw(TypeError)
+  });
+
   it("watches should trigger", async () => {
     @storeFunction
     class Store {

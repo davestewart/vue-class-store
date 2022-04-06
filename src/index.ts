@@ -56,7 +56,7 @@ function collectClassOptions(prototype: R): Partial<ComponentOptions<any>> {
   const watch: R = {}
 
   Object.keys(descriptors).forEach(key => {
-    if (key !== 'constructor' && !key.startsWith('__')) {
+    if (key !== 'constructor') {
       const {value, get, set} = descriptors[key]
       if (isWatch(key)) {
         let {name, watcher} = createWatcher(key, value)

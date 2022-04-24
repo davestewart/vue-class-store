@@ -1,16 +1,15 @@
-import {reactive, watch} from 'vue'
+import {reactive, shallowReactive, watch} from 'vue'
 
 type C = { new (...args: any[]): {} }
 
 type R = Record<any, any>
 
-function getPrototypeDescriptors (model: R): { [x: string]: PropertyDescriptor } {
-  const prototype = Object.getPrototypeOf(model)
-  if (prototype === null || prototype === Object.prototype) {
+function getDescriptors (model: R): { [x: string]: PropertyDescriptor } {
+  if(model === null || model === Object.prototype) {
     return {}
   }
-  const parentDescriptors = getPrototypeDescriptors(prototype)
-  const descriptors = Object.getOwnPropertyDescriptors(prototype)
+  const parentDescriptors = getDescriptors(Object.getPrototypeOf(model))
+  const descriptors = Object.getOwnPropertyDescriptors(model)
   return { ...parentDescriptors, ...descriptors }
 }
 
@@ -58,17 +57,11 @@ function parseWatch(key: string, callback: string | Function): WatchInfo {
  * model.
  */
 function addWatches (state) {
-  const descriptors = getPrototypeDescriptors(state)
+  const descriptors = getDescriptors(state)
 
   // collect watches
   const watches: WatchInfo[] = []
 
-  // instance watches - 'on:foo' = 'log' | 'on:foo' = function() { ... }
-  Object.keys(state).forEach(key => {
-    if (isWatch(key)) {
-      watches.push(parseWatch(key, state[key]))
-    }
-  })
   // method watches - 'on:foo'() { ... }
   Object.keys(descriptors).forEach(key => {
     if (isWatch(key)) {
@@ -89,39 +82,52 @@ function addWatches (state) {
   })
 }
 
-export function makeReactive<T extends object>(model: T): T {
+function wrapConstructor<T extends C>(constructor: T, wrap: (instance: {}) => {}): T {
+  let wrapper = {
+    // preserve the constructor name. Useful for instanceof checks. https://stackoverflow.com/a/9479081
+    // the `]: function(` instead of `](` here is necessary, otherwise the function is declared using the es6 class
+    // syntax and thus can't be called as a constructor. https://stackoverflow.com/a/40922715
+    [constructor.name]: function(...args) {
+      return wrap(new constructor!(...args))
+    }
+  }[constructor.name]
+  // set the wrapper's `prototype` property to the wrapped class's prototype. This makes instanceof work.
+  wrapper.prototype = constructor.prototype
+  // set the prototype to the constructor instance so you can still access static methods/properties.
+  // This is how JS implements inheriting statics from superclasses, so it seems like a good solution.
+  Object.setPrototypeOf(wrapper, constructor)
+  return wrapper as unknown as T
+}
+
+export function makeReactive<T extends object>(model: T, shallow: boolean = false): T {
   // if the model is reactive (such as an object extending VueStore) this will return the model
-  const state = reactive(model)
+  const state = shallow ? shallowReactive(model) : reactive(model)
   addWatches(state)
   return state as T
 }
 
 export interface VueStore {
-  new (): VueStore
+  new (): object
   <T extends C> (constructor: T): T
   create<T extends object> (model: T): T
 }
 
-const VueStore: VueStore = function VueStore (this: object, constructor?: C): any {
+const VueStore: VueStore & {Shallow: VueStore} = function VueStore (this: object, constructor?: C): any {
   if(constructor === undefined) { // called as a constructor
     return reactive(this)
   } else { // called as a decorator
-    let wrapper = {
-      // preserve the constructor name. Useful for instanceof checks. https://stackoverflow.com/a/9479081
-      // the `]: function(` instead of `](` here is necessary, otherwise the function is declared using the es6 class
-      // syntax and thus can't be called as a constructor. https://stackoverflow.com/a/40922715
-      [constructor.name]: function(...args) {
-        return makeReactive(new constructor!(...args))
-      }
-    }[constructor.name]
-    // set the wrapper's `prototype` property to the wrapped class's prototype. This makes instanceof work.
-    wrapper.prototype = constructor.prototype
-    // set the prototype to the constructor instance so you can still access static methods/properties.
-    // This is how JS implements inheriting statics from superclasses, so it seems like a good solution.
-    Object.setPrototypeOf(wrapper, constructor)
-    return wrapper
+    return wrapConstructor(constructor as C, instance => makeReactive(instance, false))
+  }
+} as VueStore & {Shallow: VueStore}
+VueStore.Shallow = function ShallowVueStore (this: object, constructor?: C): any {
+  if(constructor === undefined) { // called as a constructor
+    return shallowReactive(this)
+  } else { // called as a decorator
+    return wrapConstructor(constructor as C, instance => makeReactive(instance, true))
   }
 } as VueStore
-VueStore.create = makeReactive
+
+VueStore.create = instance => makeReactive(instance, false)
+VueStore.Shallow.create = instance => makeReactive(instance, true)
 
 export default VueStore

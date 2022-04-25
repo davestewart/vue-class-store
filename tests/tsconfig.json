@@ -1,9 +1,11 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "module": "CommonJS"
+    "module": "CommonJS",
+    "sourceMap": false
   },
   "include": [
-    "node_modules/@types/mocha/index.d.ts"
+    "node_modules/@types/mocha/index.d.ts",
+    "tests/**/*.ts"
   ]
 }

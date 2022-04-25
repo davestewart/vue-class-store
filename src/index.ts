@@ -1,4 +1,4 @@
-import {computed, reactive, watch} from 'vue'
+import {computed, reactive, watch, WatchOptions} from 'vue'
 
 type C = { new (...args: any[]): {} }
 
@@ -13,22 +13,9 @@ function getDescriptors (model: R): { [x: string]: PropertyDescriptor } {
   return { ...parentDescriptors, ...descriptors }
 }
 
-function getValue (value: Record<any, any>, path: string | string[]) {
-  const segments = typeof path === 'string'
-    ? path.split('.')
-    : path
-  const segment: string | undefined = segments.shift()
-  return segment
-    ? getValue(value[segment], segments)
-    : value
-}
-
-type WatchInfo = {
-  callback: string | Function,
-  target: string,
-  deep: boolean,
-  immediate: boolean,
-  flush?: 'pre' | 'post' | 'sync'
+function getValue (value: Record<any, any>, path: string[]) {
+  const segment = path.shift()
+  return segment !== undefined ? getValue(value[segment], path) : value
 }
 
 // 'on.flag:target', 'on.flag1.flag2:target'
@@ -38,18 +25,20 @@ let watchPattern = /^on(\.[.a-zA-Z]*)?:(.*)$/
 function isWatch(key: string): boolean {
   return watchPattern.test(key)
 }
-function parseWatch(key: string, callback: string | Function): WatchInfo {
+
+function parseWatchOptions(key: string): [string, WatchOptions] {
   let match = key.match(watchPattern)!
   // the initial period will create an empty element, but all we do is check if specific values exist, so we don't care
   let flags = new Set((match[1] ?? '').split('.'))
   let target = match[2]
-  return {
-    callback: callback,
-    target: target,
-    deep: flags.has('deep'),
-    immediate: flags.has('immediate'),
-    flush: flags.has('pre') ? 'pre' : flags.has('post') ? 'post' : flags.has('sync') ? 'sync' : undefined
-  }
+  return [
+    target,
+    {
+      deep: flags.has('deep'),
+      immediate: flags.has('immediate'),
+      flush: flags.has('pre') ? 'pre' : flags.has('post') ? 'post' : flags.has('sync') ? 'sync' : undefined
+    }
+  ]
 }
 
 /**
@@ -81,7 +70,7 @@ function parseWatch(key: string, callback: string | Function): WatchInfo {
  * ```
  */
 function addComputed(state) {
-  for(const [key, desc] of Object.entries(getDescriptors(state))) {
+  Object.entries(getDescriptors(state)).forEach(([key, desc]) => {
     const {get, set} = desc
     if(get) {
       let ref = set
@@ -95,7 +84,7 @@ function addComputed(state) {
         configurable: true
       })
     }
-  }
+  })
 }
 
 /**
@@ -103,50 +92,19 @@ function addComputed(state) {
  * model.
  */
 function addWatches (state) {
-  const descriptors = getDescriptors(state)
-
-  // collect watches
-  const watches: WatchInfo[] = []
-
-  // method watches - 'on:foo'() { ... }
-  Object.keys(descriptors).forEach(key => {
+  Object.entries(getDescriptors(state)).forEach(([key, desc]) => {
     if (isWatch(key)) {
-      watches.push(parseWatch(key, descriptors[key].value))
+      let [watchTarget, watchOptions] = parseWatchOptions(key)
+      let callback = typeof desc.value === 'string' ? state[desc.value] : desc.value
+      if(typeof callback === 'function') {
+        watch(() => getValue(state, watchTarget.split('.')), callback.bind(state), watchOptions)
+      }
     }
   })
-
-  // set up watches
-  watches.forEach(watchInfo => {
-    const callback = typeof watchInfo.callback === 'string' ? state[watchInfo.callback] : watchInfo.callback
-    if (typeof callback === 'function') {
-      watch(() => getValue(state, watchInfo.target), callback.bind(state), {
-        deep: watchInfo.deep,
-        immediate: watchInfo.immediate,
-        flush: watchInfo.flush
-      })
-    }
-  })
-}
-
-function wrapConstructor<T extends C>(constructor: T, wrap: (instance: {}) => {}): T {
-  let wrapper = {
-    // preserve the constructor name. Useful for instanceof checks. https://stackoverflow.com/a/9479081
-    // the `]: function(` instead of `](` here is necessary, otherwise the function is declared using the es6 class
-    // syntax and thus can't be called as a constructor. https://stackoverflow.com/a/40922715
-    [constructor.name]: function(...args) {
-      return wrap(new constructor!(...args))
-    }
-  }[constructor.name]
-  // set the wrapper's `prototype` property to the wrapped class's prototype. This makes instanceof work.
-  wrapper.prototype = constructor.prototype
-  // set the prototype to the constructor instance so you can still access static methods/properties.
-  // This is how JS implements inheriting statics from superclasses, so it seems like a good solution.
-  Object.setPrototypeOf(wrapper, constructor)
-  return wrapper as unknown as T
 }
 
 export function makeReactive<T extends object>(model: T): T {
-  // if the model is reactive (such as an object extending VueStore) this will return the model
+  // if the model is reactive (such as an object extending VueStore) this will return the model directly
   const state = reactive(model)
   addComputed(state)
   addWatches(state)
@@ -163,7 +121,20 @@ const VueStore: VueStore = function VueStore (this: object, constructor?: C): an
   if(constructor === undefined) { // called as a constructor
     return reactive(this)
   } else { // called as a decorator
-    return wrapConstructor(constructor as C, instance => makeReactive(instance))
+    let wrapper = {
+      // preserve the constructor name. Useful for instanceof checks. https://stackoverflow.com/a/9479081
+      // the `]: function(` instead of `](` here is necessary, otherwise the function is declared using the es6 class
+      // syntax and thus can't be called as a constructor. https://stackoverflow.com/a/40922715
+      [constructor.name]: function(...args) {
+        return makeReactive(new constructor!(...args))
+      }
+    }[constructor.name]
+    // set the wrapper's `prototype` property to the wrapped class's prototype. This makes instanceof work.
+    wrapper.prototype = constructor.prototype
+    // set the prototype to the constructor instance so you can still access static methods/properties.
+    // This is how JS implements inheriting statics from superclasses, so it seems like a good solution.
+    Object.setPrototypeOf(wrapper, constructor)
+    return wrapper
   }
 } as VueStore
 

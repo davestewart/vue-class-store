@@ -1,4 +1,4 @@
-import {reactive, shallowReactive, watch} from 'vue'
+import {computed, reactive, watch} from 'vue'
 
 type C = { new (...args: any[]): {} }
 
@@ -53,6 +53,52 @@ function parseWatch(key: string, callback: string | Function): WatchInfo {
 }
 
 /**
+ * Adds ComputedRef instances to the model for each getter/setter pair. When accessing the reactive object Vue will
+ * unwrap those refs. This method expects to be passed a reactive model.
+ *
+ * Before:
+ * ```js
+ * {
+ *   <prototype>: {
+ *     get x(),
+ *     set x(value),
+ *     get y(),
+ *   },
+ *   val: 10,
+ *   get z(),
+ *   set z(value),
+ * }
+ * ```
+ * After:
+ * ```js
+ * {
+ *   <prototype>: {...},
+ *   val: 10,
+ *   x: computed({get: <prototype x getter>, set: <prototype x setter>}),
+ *   y: computed(<prototype y getter>),
+ *   z: computed({get: <original z getter>, set: <original z setter>}),
+ * }
+ * ```
+ */
+function addComputed(state) {
+  for(const [key, desc] of Object.entries(getDescriptors(state))) {
+    const {get, set} = desc
+    if(get) {
+      let ref = set
+          ? computed({get: get.bind(state), set: set.bind(state)})
+          : computed(get.bind(state))
+
+      Object.defineProperty(state, key, {
+        value: ref, // vue unwraps this automatically when accessing it
+        writable: desc.writable,
+        enumerable: desc.enumerable,
+        configurable: true
+      })
+    }
+  }
+}
+
+/**
  * Scans the model for `on:*` watchers and then creates watches for them. This method expects to be passed a reactive
  * model.
  */
@@ -99,9 +145,10 @@ function wrapConstructor<T extends C>(constructor: T, wrap: (instance: {}) => {}
   return wrapper as unknown as T
 }
 
-export function makeReactive<T extends object>(model: T, shallow: boolean = false): T {
+export function makeReactive<T extends object>(model: T): T {
   // if the model is reactive (such as an object extending VueStore) this will return the model
-  const state = shallow ? shallowReactive(model) : reactive(model)
+  const state = reactive(model)
+  addComputed(state)
   addWatches(state)
   return state as T
 }
@@ -112,22 +159,14 @@ export interface VueStore {
   create<T extends object> (model: T): T
 }
 
-const VueStore: VueStore & {Shallow: VueStore} = function VueStore (this: object, constructor?: C): any {
+const VueStore: VueStore = function VueStore (this: object, constructor?: C): any {
   if(constructor === undefined) { // called as a constructor
     return reactive(this)
   } else { // called as a decorator
-    return wrapConstructor(constructor as C, instance => makeReactive(instance, false))
-  }
-} as VueStore & {Shallow: VueStore}
-VueStore.Shallow = function ShallowVueStore (this: object, constructor?: C): any {
-  if(constructor === undefined) { // called as a constructor
-    return shallowReactive(this)
-  } else { // called as a decorator
-    return wrapConstructor(constructor as C, instance => makeReactive(instance, true))
+    return wrapConstructor(constructor as C, instance => makeReactive(instance))
   }
 } as VueStore
 
-VueStore.create = instance => makeReactive(instance, false)
-VueStore.Shallow.create = instance => makeReactive(instance, true)
+VueStore.create = makeReactive
 
 export default VueStore

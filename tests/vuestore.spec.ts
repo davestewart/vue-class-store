@@ -1,37 +1,28 @@
 import chai, {assert, expect} from 'chai';
 import spies from 'chai-spies';
 import VueStore from '../src';
-import Vue, {nextTick, reactive, watch} from "vue";
+import Vue, {computed, nextTick, reactive, watch} from "vue";
 
 chai.use(spies)
 
-function spy(): (...args) => void {
-  return chai.spy()
+function spy(): { (...args): void } & ChaiSpies.Resetable {
+  let spy = chai.spy()
+  spy.reset = () => { // https://github.com/chaijs/chai-spies/issues/104
+    spy['__spy'].calls = []
+    spy['__spy'].called = false
+    return spy
+  }
+  return spy
 }
 
 type C = { new(...args: any[]): {} }
 
-function testStores(storeFunction: <T extends C>(constructor: T) => T, shallow: boolean) {
+function testStores(storeFunction: <T extends C>(constructor: T) => T) {
   it("`this` should be preserved when extending VueStore", () => {
     let constructedInstance: Store | null = null
 
     @storeFunction
     class Store extends VueStore {
-      constructor() {
-        super()
-        constructedInstance = this
-      }
-    }
-
-    let store = new Store()
-    expect(constructedInstance).to.equal(store)
-  });
-
-  it("`this` should be preserved when extending VueStore.Shallow", () => {
-    let constructedInstance: Store | null = null
-
-    @storeFunction
-    class Store extends VueStore.Shallow {
       constructor() {
         super()
         constructedInstance = this
@@ -164,15 +155,16 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T, shallow: 
       replaceWithMissing: object = {value: 10}
       replaceFromMissing: object = {}
       explicitNested = reactive({value: 60})
+      getterData = 50
 
       get watchedGetter() {
-        spies.watchedGetterSpy(this.plain)
-        return `${this.plain}`
+        spies.watchedGetterSpy(this.getterData)
+        return `${this.getterData}`
       }
 
       get unwatchedGetter() {
-        spies.unwatchedGetterSpy(this.plain)
-        return `${this.plain}`
+        spies.unwatchedGetterSpy(this.getterData)
+        return `${this.getterData}`
       }
 
       'on:indirectStringData' = 'indirectStringChanged'
@@ -230,7 +222,7 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T, shallow: 
     let store = new Store()
 
     expect(spies.immediateSpy).to.be.called.with(30)
-    expect(spies.watchedGetterSpy, 'watched getter never accessed').to.be.called.with(10)
+    expect(spies.watchedGetterSpy, 'watched getter never accessed').to.be.called.with(50)
     expect(spies.unwatchedGetterSpy, 'unwatched getter never accessed').not.to.be.called()
 
     store.plain = 100
@@ -245,11 +237,14 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T, shallow: 
     store.replaceWithMissing = {}
     store.replaceFromMissing = {value: 10}
     store.explicitNested.value = 70
+    store.getterData = 25
 
     await nextTick()
 
     expect(spies.plainSpy, 'plain').to.be.called.with(100, 10)
+    expect(spies.deepSpy, 'deep').to.be.called.with({value: 200}, {value: 200})
     expect(spies.immediateSpy, 'immediate').to.be.called.with(300, 30)
+    expect(spies.nestingSpy, 'nesting').to.be.called.with(400, 40)
     expect(spies.indirectStringSpy, 'indirectString').to.be.called.with('new', 'old')
     expect(spies.instanceFunctionSpy, 'instanceFunction').to.be.called.with('new', 'old')
     expect(spies.replaceSpy, 'replace').to.be.called.with(replacement, original)
@@ -257,17 +252,9 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T, shallow: 
     expect(spies.nestedReplaceWithMissingSpy, 'nestedReplaceWithMissing').to.be.called.with(undefined, 10)
     expect(spies.nestedReplaceFromMissingSpy, 'nestedReplaceFromMissing').to.be.called.with(10, undefined)
     expect(spies.explicitNestedSpy, 'explicit nested reactive({})').to.be.called.with(70, 60)
-    expect(spies.watchedGetterSpy, 'watched getter changed never accessed').to.be.called.with(100)
+    expect(spies.watchedGetterSpy, 'watched getter changed never accessed').to.be.called.with(25)
     expect(spies.unwatchedGetterSpy, 'unwatched getter changed never accessed').not.to.be.called()
-    expect(spies.getterWatchSpy, 'getter watch').to.be.called.with('100', '10')
-
-    if(shallow) {
-      expect(spies.deepSpy, 'deep').not.to.be.called()
-      expect(spies.nestingSpy, 'nesting').not.to.be.called()
-    } else {
-      expect(spies.deepSpy, 'deep').to.be.called.with({value: 200}, {value: 200})
-      expect(spies.nestingSpy, 'nesting').to.be.called.with(400, 40)
-    }
+    expect(spies.getterWatchSpy, 'getter watch').to.be.called.with('25', '50')
 
     store.syncValue = 300
     expect(spies.syncSpy, 'sync').to.be.called.with(300, 30)
@@ -305,7 +292,9 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T, shallow: 
   })
 }
 
-function testExtends(storeFunction: <T extends C>(constructor: T) => T, shallow: boolean) {
+describe("@VueStore", () => {
+  testStores(VueStore)
+
   it("a store extending VueStore should be instanceof VueStore and itself", () => {
     class Store extends VueStore {}
 
@@ -315,14 +304,14 @@ function testExtends(storeFunction: <T extends C>(constructor: T) => T, shallow:
   });
 
   it("constructor name should match", () => {
-    @storeFunction
+    @VueStore
     class Store {}
 
     expect(Store.name).to.equal("Store")
   });
 
   it("statics should work", () => {
-    @storeFunction
+    @VueStore
     class Store {
       static prop = 10
       static bump() {
@@ -336,25 +325,12 @@ function testExtends(storeFunction: <T extends C>(constructor: T) => T, shallow:
   });
 
   it("instanceof should be preserved", () => {
-    @storeFunction
+    @VueStore
     class Store {}
 
     let store = new Store()
     expect(store).to.be.instanceof(Store)
   });
-}
-
-function testCreate(storeFunction: <T extends object>(instance: T) => T, shallow: boolean) {
-}
-
-describe("@VueStore", () => {
-  testStores(VueStore, false)
-  testExtends(VueStore, false)
-});
-
-describe("@VueStore.Shallow", () => {
-  testStores(VueStore.Shallow, true)
-  testExtends(VueStore.Shallow, true)
 });
 
 describe("VueStore.create", () => {
@@ -364,19 +340,5 @@ describe("VueStore.create", () => {
           return VueStore.create(new (constructor as C)(...args))
         } as unknown as T
       },
-      false
   )
-  testCreate(VueStore.create, false)
-});
-
-describe("VueStore.Shallow.create", () => {
-  testStores(
-      <T extends C>(constructor: T) => {
-        return function (...args: any[]) {
-          return VueStore.Shallow.create(new (constructor as C)(...args))
-        } as unknown as T
-      },
-      true
-  )
-  testCreate(VueStore.Shallow.create, false)
 });

@@ -178,6 +178,63 @@ function testStores(storeFunction: <T extends C>(constructor: T) => T) {
     expect(createdSpy).to.be.called()
   });
 
+  it("nested created hooks should run", async () => {
+    let constructorSpy = chai.spy()
+    let createdSpy = chai.spy()
+    let createdSpy2 = chai.spy()
+
+    let spies = {
+      constructorSpy(instance) {
+        constructorSpy()
+        // can't watch here
+        expect(instance).not.to.have.property('_watchers')
+        expect(() => instance.$watch('x', () => {})).to.throw(TypeError)
+      },
+      createdSpy(instance) {
+        expect(constructorSpy).to.be.called()
+        expect(createdSpy2).to.be.called()
+        createdSpy()
+        // the data has been added back and we can now watch
+        expect(instance).to.have.property('x')
+        expect(instance).to.have.property('_watchers')
+        expect(() => instance.$watch('x', () => {})).not.to.throw(TypeError)
+      },
+      createdSpy2(instance) {
+        expect(constructorSpy).to.be.called()
+        expect(createdSpy).not.to.be.called()
+        createdSpy2()
+        // the data has been added back and we can now watch
+        expect(instance).to.have.property('x')
+        expect(instance).to.have.property('_watchers')
+        expect(() => instance.$watch('x', () => {})).not.to.throw(TypeError)
+      },
+    }
+
+    class Superclass {
+      created() {
+        spies.createdSpy2(this)
+      }
+    }
+
+    @storeFunction
+    class Store extends Superclass {
+      x = 10
+
+      constructor() {
+        super()
+        spies.constructorSpy(this)
+      }
+
+      created() {
+        spies.createdSpy(this)
+      }
+    }
+    let store = new Store()
+
+    expect(createdSpy).to.be.called()
+    expect(createdSpy2).to.be.called()
+  });
+
   it("non-function 'created' properties should not crash", async () => {
     @storeFunction
     class Store {
@@ -346,6 +403,35 @@ describe("@VueStore", () => {
 
     let store = new Store()
     expect(store).to.be.instanceof(Store)
+  });
+
+  it("the constructor should be set", () => {
+    @VueStore
+    class Store {}
+
+    let store = new Store()
+    expect(store.constructor).to.equal(Store)
+  });
+
+  it("nesting decorators should throw an exception", () => {
+    @VueStore
+    class ParentStore {}
+
+    class MiddleClass extends ParentStore {}
+
+    expect(() => {
+      @VueStore
+      class ChildStore extends MiddleClass {}
+    }).to.throw("Illegal subclass (ChildStore) of @VueStore class ParentStore")
+  });
+
+  it("instantiating subclasses should throw an exception", () => {
+    @VueStore
+    class ParentStore {}
+
+    class ChildClass extends ParentStore {}
+
+    expect(() => new ChildClass()).to.throw("Illegal subclass (ChildClass) of @VueStore class ParentStore")
   });
 });
 

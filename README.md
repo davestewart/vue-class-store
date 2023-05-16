@@ -148,6 +148,8 @@ Your constructor is then called, returning your new object. `VueStore` intercept
 then turns around and tells Vue to initialize this (now empty) object as a Vue instance, passing it your data. Vue then
 happily puts that data right back where it came from, but with added reactivity.
 
+![howitworks](docs/howitworks.png)
+
 ### `@VueStore`
 `@VueStore` is able to frontload both the injection of `Vue.prototype` and collecting your prototype's methods to form
 the basis of the options object sent to vue. It also does a couple `class`-specific things. It copies the static methods
@@ -161,7 +163,7 @@ prototype, leaving the original intact.
 
 ## Inheritance
 
-The decorator supports class inheritance meaning you can do things like this:
+The decorator supports superclasses, meaning you can do things like this:
 
 ```typescript
 class Rectangle {
@@ -187,20 +189,53 @@ class Square extends Rectangle {
 }
 ```
 
-Make sure you **don't inherit from another decorated class**. Initializing a vue instance adds tons of data to the
-object, which will then wind up being fed into the next vue initializer, which will gum things up horribly.
+However, the decorator does *not* support subclassing. Because reactivity would be injected before the subclass 
+constructor, and due to prototype shenanigans, reactivity would start behaving in bizarre ways. 
 
 ```typescript
 // don't do this!
 
 @VueStore
-class Rectangle { ... }
+class Rectangle {
+  width = 0
+  height = 0
+  
+  get area() {
+    return width * height
+  }
+  
+  'on:area'() {
+    console.log('area changed')
+  }
+}
 
-@VueStore
-class Square extends Rectangle { ... }
+class Square extends Rectangle {
+  // this won't be reactive
+  size = 0
+  
+  // this getter override won't be called
+  get area() { 
+    return size * size
+  }
+  
+  // this won't be reactive
+  get perimeter() { 
+    return size * 4
+  }
+
+  // this method override won't be called
+  'on:area'() {
+    console.log('square changed')
+  }
+  
+  // this watch won't work
+  'on:width'() {
+    console.log('width changed')
+  }
+}
 ```
 
-If you need to keep the original Rectangle and Square intact, decorate a final empty class that leaves the original classes untouched:
+If you need to keep the original hierarchy, decorate a final empty class that leaves the original classes untouched:
 
 ```typescript
 // do this instead...
@@ -209,14 +244,15 @@ class Rectangle { ... }
 class Square extends Rectangle { ... }
 
 @VueStore
+class RectangleStore extends Rectangle { }
+@VueStore
 class SquareStore extends Square { } 
 ```
 
 Alternatively, use inline creation:
 
 ```typescript
-import Square from './Square'
-
+const model: Rectangle = VueStore.create(new Rectangle(10))
 const model: Square = VueStore.create(new Square(10))
 ```
 
